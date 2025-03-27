@@ -6,7 +6,6 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { useTheme } from "../components/theme-provider";
 import { Loader2, Moon, Sun } from "lucide-react";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
+import { Navigate } from "react-router-dom";
 
 function Navbar() {
   const [user, setUser] = useAtom(globalState);
@@ -23,6 +23,7 @@ function Navbar() {
 
   const handleLogout = () => {
     setUser(null);
+    <Navigate to="/" replace />;
   };
 
   return (
