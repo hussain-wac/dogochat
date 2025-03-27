@@ -27,7 +27,7 @@ import {
   UserPlusIcon 
 } from "lucide-react";
 
-function SearchBar() {
+function SearchBar({ setActiveChat }) {
   const user = useAtomValue(globalState);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState([]);
@@ -85,6 +85,9 @@ function SearchBar() {
       await updateDoc(selectedUserRef, {
         chatlist: arrayUnion({ name: user.displayName, type: "private", refid: chatId })
       });
+
+      // ✅ Set active chat immediately
+      setActiveChat(chatId);
 
       setSearch("");
       setResults([]);
