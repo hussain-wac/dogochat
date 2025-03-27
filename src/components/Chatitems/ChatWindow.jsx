@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
-import { SendHorizontalIcon, UserIcon } from "lucide-react";
+import { SendHorizontalIcon, MessageCircleIcon  } from "lucide-react";
 import useChatWindow from "../../hooks/useChatwindow";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -16,7 +16,6 @@ function ChatWindow({ activeChat }) {
     scrollAreaRef,
     newMessage,
     user,
-    chatnameval,
     isLoading,
     chatdet,
   } = useChatWindow(activeChat);
