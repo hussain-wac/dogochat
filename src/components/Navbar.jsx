@@ -1,9 +1,9 @@
 import React from "react";
 import { useAtom } from "jotai";
-import { globalState } from "../jotai/globalState"
+import { globalState } from "../jotai/globalState";
 import { User, LogOut, Menu } from "lucide-react";
 import { Button } from "./ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { useTheme } from "../components/theme-provider";
 import { Loader2, Moon, Sun } from "lucide-react";
 
@@ -29,8 +29,13 @@ function Navbar() {
     <nav className="border-b bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
+          <img
+            src="/dogo.svg"
+            alt="Dogochat Logo"
+            className="w-11 h-11" // Adjust the size of the logo
+          />
           <span className="font-bold text-xl md:text-2xl">
-            Dogo<span className="text-neutral-500">chat</span>
+            Dogo<span className="text-orange-300">chat</span>
           </span>
         </div>
 
