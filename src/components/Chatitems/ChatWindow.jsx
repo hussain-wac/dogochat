@@ -60,7 +60,7 @@ function ChatWindow({ activeChat }) {
             flex flex-row items-center space-x-3 
             h-16 min-h-[4rem] 
             sticky top-0 z-10 
-            bg-white dark:bg-gray-900
+            bg-white dark:bg-neutral-900
           "
         >
           {chatdet.profilePic ? (
