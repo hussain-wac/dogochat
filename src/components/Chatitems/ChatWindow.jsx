@@ -18,6 +18,7 @@ function ChatWindow({ activeChat }) {
     user,
     chatnameval,
     isLoading,
+    chatdet,
   } = useChatWindow(activeChat);
 
   if (!activeChat) {
@@ -31,14 +32,26 @@ function ChatWindow({ activeChat }) {
   return (
     <Card className="h-full rounded-none border-none shadow-none flex flex-col">
       <CardHeader className="border-b dark:border-gray-700 flex flex-row items-center space-x-3">
-        <div className="bg-gray-200 dark:bg-gray-700 p-2 rounded-full">
-          <UserIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-        </div>
-        <CardTitle>{chatnameval || "Chat"}</CardTitle>
+        {chatdet.profilePic ? (
+          <img
+            src={chatdet.profilePic}
+            alt={chatdet.chatname}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <MessageCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
+          </div>
+        )}
+
+        <CardTitle>{chatdet.chatname}</CardTitle>
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea ref={scrollAreaRef} className="flex-1 p-4 space-y-3 overflow-y-auto">
+        <ScrollArea
+          ref={scrollAreaRef}
+          className="flex-1 p-4 space-y-3 overflow-y-auto"
+        >
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, index) => (

@@ -10,7 +10,7 @@ import {
 import { MessageCircleIcon, MoreVertical, Trash } from "lucide-react";
 import useChatList from "../../hooks/useChatlist";
 import { useSetAtom } from "jotai";
-import { chatname } from "../../jotai/globalState";
+import { chatdetails } from "../../jotai/globalState";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -23,7 +23,8 @@ import { Button } from "@/components/ui/button";
 
 function ChatList({ setActiveChat }) {
   const { chatList, isLoading, deleteChat } = useChatList();
-  const setchatname = useSetAtom(chatname);
+
+  const setChatdet = useSetAtom(chatdetails)
   const [open, setOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
 
@@ -33,7 +34,6 @@ function ChatList({ setActiveChat }) {
   };
 
 
-  // console.log(chatList)
 
   return (
     <>
@@ -67,7 +67,13 @@ function ChatList({ setActiveChat }) {
                         <div
                           onClick={() => {
                             setActiveChat(chat.refid);
-                            setchatname(chat.name);
+                  
+                            setChatdet ( {
+                              chatname : chat.name,
+                              profilePic : chat.profilePic,
+                            })
+
+                            
                           }}
                           className="
                             p-4 

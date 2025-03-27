@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAtomValue, useSetAtom } from "jotai";
-import { chatname, globalState } from "../../jotai/globalState";
+import { chatdetails,  globalState } from "../../jotai/globalState";
 import { useSWRConfig } from "swr";
 import { useSearchUsers } from "../../hooks/useSearchUsers";
 import { Button } from "@/components/ui/button";
@@ -20,10 +20,10 @@ function SearchBar({ setActiveChat }) {
   const user = useAtomValue(globalState);
   const { mutate } = useSWRConfig();
   const [search, setSearch] = useState("");
-
+  const setdet= useSetAtom(chatdetails);
   const { users, isLoading } = useSearchUsers(search);
 
-  const setchatname = useSetAtom(chatname);
+
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -116,7 +116,9 @@ function SearchBar({ setActiveChat }) {
                   <Button
                     size="sm"
                     onClick={() => {
-                      startChat(user), setchatname(user.username);
+                      startChat(user), setdet({
+                        chatname: user.username, 
+                      })
                     }}
                   >
                     Start Chat
