@@ -49,6 +49,14 @@ const useChatWindow = (activeChat) => {
         top: scrollElement.scrollHeight,
         behavior,
       });
+      // Ensure badge hides after scrolling to bottom
+      setTimeout(() => {
+        const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+        if (scrollTop + clientHeight >= scrollHeight - 10) {
+          setNewMessagesCount(0);
+          setIsAtBottom(true);
+        }
+      }, 300); // Delay to allow scroll animation to complete
     }
   };
 
@@ -59,7 +67,9 @@ const useChatWindow = (activeChat) => {
       const { scrollTop, scrollHeight, clientHeight } = scrollElement;
       const isBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
       setIsAtBottom(isBottom);
-      if (isBottom) setNewMessagesCount(0); // Reset badge when at bottom
+      if (isBottom) {
+        setNewMessagesCount(0); // Hide badge when user scrolls to bottom
+      }
     }
   };
 
