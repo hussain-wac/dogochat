@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 function ChatList({ setActiveChat }) {
   const { chatList, isLoading, deleteChat } = useChatList();
 
-  const setChatdet = useSetAtom(chatdetails)
+  const setChatdet = useSetAtom(chatdetails);
   const [open, setOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
 
@@ -33,19 +33,17 @@ function ChatList({ setActiveChat }) {
     setOpen(true);
   };
 
-
-
   return (
-    <>
-      <Card className="rounded-none border-none shadow-none">
-        <CardHeader className="border-b dark:border-gray-700">
+    <div className="flex flex-col h-full">
+      <Card className="rounded-none border-none shadow-none flex flex-col h-full">
+        <CardHeader className="border-b dark:border-gray-700 shrink-0">
           <CardTitle className="flex items-center">
             <MessageCircleIcon className="mr-2 h-5 w-5" />
             Chats
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <ScrollArea className="h-[calc(100vh-4rem)]">
+        <CardContent className="p-0 flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
             {isLoading ? (
               <div className="space-y-4 p-4">
                 {[...Array(5)].map((_, index) => (
@@ -67,13 +65,10 @@ function ChatList({ setActiveChat }) {
                         <div
                           onClick={() => {
                             setActiveChat(chat.refid);
-                  
-                            setChatdet ( {
-                              chatname : chat.name,
-                              profilePic : chat.profilePic,
-                            })
-
-                            
+                            setChatdet({
+                              chatname: chat.name,
+                              profilePic: chat.profilePic,
+                            });
                           }}
                           className="
                             p-4 
@@ -99,8 +94,8 @@ function ChatList({ setActiveChat }) {
                             </div>
                           )}
 
-                          <div className="flex-1">
-                            <div className="font-semibold">{chat.name}</div>
+                          <div className="flex-1 overflow-hidden">
+                            <div className="font-semibold truncate">{chat.name}</div>
                             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                               Last message placeholder
                             </p>
@@ -166,7 +161,7 @@ function ChatList({ setActiveChat }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
 

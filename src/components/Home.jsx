@@ -10,24 +10,31 @@ import SearchBar from "./Chatitems/Searchbar";
 
 function Home() {
   const [activeChat, setActiveChat] = useState(null);
-  // console.log(activeChat)
 
   return (
-    <div className="dark:bg-gray-900 dark:text-white flex">
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
+    <div className="h-full flex">
+      <ResizablePanelGroup 
+        direction="horizontal" 
+        className="flex-1"
+      >
         <ResizablePanel 
           defaultSize={30} 
           minSize={20} 
-          className="border-r dark:border-gray-700"
+          className="border-r dark:border-gray-700 flex flex-col"
         >
           <SearchBar setActiveChat={setActiveChat} />
-          <div className="h-full flex flex-col">
+          <div className="flex-1 overflow-hidden">
             <ChatList setActiveChat={setActiveChat} />
           </div>
         </ResizablePanel>
 
         <ResizablePanelHandle className="dark:bg-gray-700" />
-        <ResizablePanel defaultSize={70} minSize={50}>
+        
+        <ResizablePanel 
+          defaultSize={70} 
+          minSize={50} 
+          className="h-full"
+        >
           <ChatWindow activeChat={activeChat} />
         </ResizablePanel>
       </ResizablePanelGroup>
