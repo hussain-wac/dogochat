@@ -1,7 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { db } from "../firebase";
 import { globalState } from "../jotai/globalState";
-
+import { 
+    collection, 
+    onSnapshot, 
+    addDoc, 
+    query, 
+    orderBy 
+  } from "firebase/firestore";
 import { useAtomValue } from "jotai";
 const useChatWindow = (activeChat) =>{
 
@@ -51,7 +57,7 @@ const user = useAtomValue(globalState);
     return {
         messages,sendMessage,
         setMessages,newMessage,setNewMessage,
-        scrollAreaRef
+        scrollAreaRef,user
 
     }
 

@@ -19,7 +19,7 @@ import useChatWindow from "../../hooks/useChatwindow";
 function ChatWindow({ activeChat }) {
 
 
-  const {messages,sendMessage,setNewMessage,scrollAreaRef,newMessage} = useChatWindow(activeChat)
+  const {messages,sendMessage,setNewMessage,scrollAreaRef,newMessage,user} = useChatWindow(activeChat)
   
   return (
     <Card className="h-6/7 rounded-none border-none shadow-none flex flex-col">
