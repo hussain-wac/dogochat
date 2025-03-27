@@ -86,7 +86,6 @@ function ChatList({ setActiveChat }) {
                             transition-colors
                           "
                         >
-                          {console.log("chat",chat.profilePic)}
                           {/* Profile Picture */}
                           {chat.profilePic ? (
                             <img
