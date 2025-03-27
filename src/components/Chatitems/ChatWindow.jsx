@@ -107,7 +107,7 @@ function ChatWindow({ activeChat }) {
                         p-3 rounded-xl max-w-[70%] mt-2
                         ${
                           msg.sender === user.uid
-                            ? "bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100"
+                            ? "bg-orange-100 dark:bg-orange-900/50 text-orange-900 dark:text-orange-100"
                             : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                         }
                       `}
@@ -128,7 +128,7 @@ function ChatWindow({ activeChat }) {
               >
                 <Button
                   variant="outline"
-                  className="rounded-full bg-blue-500 text-white flex items-center space-x-2"
+                  className="rounded-full bg-orange-500 text-white flex items-center space-x-2"
                   onClick={() => scrollToBottom("smooth")}
                 >
                   <span>New Messages ({newMessagesCount})</span>
@@ -175,5 +175,4 @@ function ChatWindow({ activeChat }) {
     </div>
   );
 }
-
 export default ChatWindow;
