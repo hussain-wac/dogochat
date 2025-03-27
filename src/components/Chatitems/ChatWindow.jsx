@@ -9,6 +9,7 @@ import {
   MessageCircleIcon,
   SmileIcon,
   PaperclipIcon,
+  ChevronDownIcon,
 } from "lucide-react";
 import useChatWindow from "../../hooks/useChatwindow";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,6 +30,9 @@ function ChatWindow({ activeChat }) {
     user,
     isLoading,
     chatdet,
+    newMessagesCount,
+    handleScroll,
+    scrollToBottom,
   } = useChatWindow(activeChat);
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -78,7 +82,8 @@ function ChatWindow({ activeChat }) {
           {/* Messages Area */}
           <ScrollArea
             ref={scrollAreaRef}
-            className="flex-1 p-4  overflow-auto"
+            className="flex-1 p-4 overflow-auto relative"
+            onScroll={handleScroll}
           >
             <div className="space-y-3 pb-4">
               {isLoading
@@ -112,6 +117,25 @@ function ChatWindow({ activeChat }) {
                     </motion.div>
                   ))}
             </div>
+
+            {/* New Messages Badge with Down Arrow */}
+            {newMessagesCount > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+                className="sticky bottom-4 flex justify-center"
+              >
+                <Button
+                  variant="outline"
+                  className="rounded-full bg-blue-500 text-white flex items-center space-x-2"
+                  onClick={() => scrollToBottom("smooth")}
+                >
+                  <span>New Messages ({newMessagesCount})</span>
+                  <ChevronDownIcon className="h-4 w-4" />
+                </Button>
+              </motion.div>
+            )}
           </ScrollArea>
 
           {/* Fixed Input Area */}
@@ -151,4 +175,5 @@ function ChatWindow({ activeChat }) {
     </div>
   );
 }
+
 export default ChatWindow;

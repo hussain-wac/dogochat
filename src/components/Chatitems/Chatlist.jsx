@@ -18,7 +18,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 function ChatList({ setActiveChat }) {
@@ -95,7 +101,9 @@ function ChatList({ setActiveChat }) {
                           )}
 
                           <div className="flex-1 overflow-hidden">
-                            <div className="font-semibold truncate">{chat.name}</div>
+                            <div className="font-semibold truncate">
+                              {chat.name}
+                            </div>
                             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                               Last message placeholder
                             </p>
