@@ -84,7 +84,7 @@ function ChatList({ setActiveChat }) {
                           {/* Profile Picture */}
                           {chat.profilePic ? (
                             <img
-                              src={chat.photoURL
+                              src={chat.profile
                               }
                               alt={chat.name}
                               className="w-10 h-10 rounded-full object-cover"
