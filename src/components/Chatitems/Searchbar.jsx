@@ -55,7 +55,7 @@ function SearchBar({ setActiveChat }) {
           name: selectedUser.username,
           type: "private",
           refid: chatId,
-          profile : selectedUser.photoURL
+          profilePic : selectedUser.photoURL
 
         }),
       });
