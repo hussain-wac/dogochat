@@ -10,7 +10,7 @@ import SearchBar from "./Chatitems/Searchbar";
 
 function Home() {
   const [activeChat, setActiveChat] = useState(null);
-  console.log(activeChat)
+  // console.log(activeChat)
 
   return (
     <div className="dark:bg-gray-900 dark:text-white flex">

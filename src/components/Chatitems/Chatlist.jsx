@@ -7,8 +7,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { MessageCircleIcon, MoreVertical, UserIcon, Trash } from "lucide-react";
-import useChatList from "../../hooks/useChatlist"
+import { MessageCircleIcon, MoreVertical, Trash } from "lucide-react";
+import useChatList from "../../hooks/useChatlist";
 import { useSetAtom } from "jotai";
 import { chatname } from "../../jotai/globalState";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,6 +31,9 @@ function ChatList({ setActiveChat }) {
     setChatToDelete(refid);
     setOpen(true);
   };
+
+
+  // console.log(chatList)
 
   return (
     <>
@@ -77,15 +80,29 @@ function ChatList({ setActiveChat }) {
                             transition-colors
                           "
                         >
-                          <div className="bg-gray-200 dark:bg-gray-700 p-2 rounded-full">
-                            <UserIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                          </div>
+                          {console.log("chat",chat)}
+                          {/* Profile Picture */}
+                          {chat.profilePic ? (
+                            <img
+                              src={chat.photoURL
+                              }
+                              alt={chat.name}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                              <MessageCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
+                            </div>
+                          )}
+
                           <div className="flex-1">
                             <div className="font-semibold">{chat.name}</div>
                             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                               Last message placeholder
                             </p>
                           </div>
+
+                          {/* Options Menu */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <button className="p-2">

@@ -10,7 +10,6 @@ const fetchChatList = (uid) => {
       reject("No user ID");
       return;
     }
-
     const userDocRef = doc(db, "users", uid);
     const unsubscribe = onSnapshot(
       userDocRef,
@@ -49,7 +48,7 @@ const useChatList = () => {
         chatlist: chatList.filter((chat) => chat.refid !== chatRefId),
       });
 
-      mutate(); // Refresh chat list
+      mutate(); 
     } catch (error) {
       console.error("Error deleting chat:", error);
     }

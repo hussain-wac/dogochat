@@ -48,12 +48,15 @@ function SearchBar({ setActiveChat }) {
 
       const currentUserRef = doc(db, "users", user.uid);
       const selectedUserRef = doc(db, "users", selectedUser.uid);
+      console.log(selectedUser)
 
       await updateDoc(currentUserRef, {
         chatlist: arrayUnion({
           name: selectedUser.username,
           type: "private",
           refid: chatId,
+          profile : selectedUser.photoURL
+
         }),
       });
 
