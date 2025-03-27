@@ -19,10 +19,8 @@ function Home() {
           minSize={20} 
           className="border-r dark:border-gray-700"
         >
-          {/* ✅ Pass setActiveChat to SearchBar */}
           <SearchBar setActiveChat={setActiveChat} />
           <div className="h-full flex flex-col">
-            {/* ✅ Ensure ChatList also has setActiveChat */}
             <ChatList setActiveChat={setActiveChat} />
           </div>
         </ResizablePanel>

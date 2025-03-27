@@ -1,14 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import { 
-  collection, 
-  onSnapshot, 
-  addDoc, 
-  query, 
-  orderBy 
-} from "firebase/firestore";
-import { db } from "../../firebase";
-import { useAtomValue } from "jotai";
-import { globalState } from "../../jotai/globalState";
+import React from "react";
+
 import { 
   Card, 
   CardContent, 
@@ -23,65 +14,13 @@ import {
   UserIcon, 
   MessageCircleIcon 
 } from "lucide-react";
+import useChatWindow from "../../hooks/useChatwindow";
 
 function ChatWindow({ activeChat }) {
-  const user = useAtomValue(globalState);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
-  const scrollAreaRef = useRef(null);
 
-  useEffect(() => {
-    if (!activeChat) return;
-    
-    const messagesRef = collection(db, "chats", activeChat, "messages");
-    const q = query(messagesRef, orderBy("timestamp"));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map((doc) => ({ 
-        id: doc.id, 
-        ...doc.data() 
-      }));
-      setMessages(msgs);
-    });
-
-    return () => unsubscribe();
-  }, [activeChat]);
-
-  useEffect(() => {
-    // Scroll to bottom when messages change
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({ 
-        top: scrollAreaRef.current.scrollHeight, 
-        behavior: 'smooth' 
-      });
-    }
-  }, [messages]);
-
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !activeChat) return;
-    try {
-      await addDoc(collection(db, "chats", activeChat, "messages"), {
-        sender: user.uid,
-        text: newMessage,
-        timestamp: new Date(),
-      });
-      setNewMessage("");
-    } catch (error) {
-      console.error("Error sending message:", error);
-    }
-  };
-
-  if (!activeChat) {
-    return (
-      <div className="flex items-center justify-center  text-gray-500 dark:text-gray-400">
-        <div className="text-center">
-          <MessageCircleIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>Select a chat to start messaging</p>
-        </div>
-      </div>
-    );
-  }
-
+  const {messages,sendMessage,setNewMessage,scrollAreaRef,newMessage} = useChatWindow(activeChat)
+  
   return (
     <Card className="h-6/7 rounded-none border-none shadow-none flex flex-col">
       <CardHeader className="border-b dark:border-gray-700 flex flex-row items-center space-x-3">
