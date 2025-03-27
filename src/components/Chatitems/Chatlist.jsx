@@ -1,27 +1,20 @@
 import React from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { 
-  MessageCircleIcon, 
-  UserIcon 
-} from "lucide-react";
+import { MessageCircleIcon, UserIcon } from "lucide-react";
 import useChatlist from "../../hooks/useChatlist";
+import { useSetAtom } from "jotai";
+import { chatname } from "../../jotai/globalState";
 
 function ChatList({ setActiveChat }) {
-
-  const {chatList} = useChatlist(setActiveChat);
-  
+  const { chatList } = useChatlist(setActiveChat);
+  const setchatname = useSetAtom(chatname);
 
   return (
     <Card className=" rounded-none border-none shadow-none">
@@ -40,7 +33,9 @@ function ChatList({ setActiveChat }) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div
-                        onClick={() => setActiveChat(chat.refid)}
+                        onClick={() => {
+                          setActiveChat(chat.refid), setchatname(chat.name);
+                        }}
                         className="
                           p-4 
                           hover:bg-gray-100 

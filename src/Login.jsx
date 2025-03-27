@@ -31,15 +31,13 @@ const Login = () => {
           email: user.email,
           photoURL: user.photoURL,
           createdAt: new Date().toISOString(),
-          chatlist: [] // initialize chatlist as empty array
+          chatlist: [] 
         });
         await updateProfile(user, {
           displayName: user.displayName,
           photoURL: user.photoURL,
         });
       }
-
-      // Store user info in global state
       setUser({
         uid: user.uid,
         displayName: user.displayName,
