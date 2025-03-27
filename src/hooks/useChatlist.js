@@ -31,7 +31,7 @@ const fetchChatList = (uid) => {
 const useChatList = () => {
   const user = useAtomValue(globalState);
 
-  const { data: chatList = [], error } = useSWR(
+  const { data: chatList = [], error ,isLoading } = useSWR(
     user?.uid ? `chatList-${user.uid}` : null,
     () => fetchChatList(user.uid),
     {
@@ -42,7 +42,7 @@ const useChatList = () => {
 
   if (error) console.error("Error fetching chat list:", error);
 
-  return { chatList, user };
+  return { chatList, user ,isLoading};
 };
 
 export default useChatList;

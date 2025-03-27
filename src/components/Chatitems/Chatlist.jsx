@@ -11,13 +11,14 @@ import { MessageCircleIcon, UserIcon } from "lucide-react";
 import useChatlist from "../../hooks/useChatlist";
 import { useSetAtom } from "jotai";
 import { chatname } from "../../jotai/globalState";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function ChatList({ setActiveChat }) {
-  const { chatList } = useChatlist(setActiveChat);
+  const { chatList, isLoading } = useChatlist(setActiveChat);
   const setchatname = useSetAtom(chatname);
 
   return (
-    <Card className=" rounded-none border-none shadow-none">
+    <Card className="rounded-none border-none shadow-none">
       <CardHeader className="border-b dark:border-gray-700">
         <CardTitle className="flex items-center">
           <MessageCircleIcon className="mr-2 h-5 w-5" />
@@ -26,7 +27,20 @@ function ChatList({ setActiveChat }) {
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[calc(100vh-4rem)]">
-          {chatList.length > 0 ? (
+          {isLoading ? (
+            // Loading Skeleton
+            <div className="space-y-4 p-4">
+              {[...Array(5)].map((_, index) => (
+                <div key={index} className="flex items-center space-x-3">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : chatList.length > 0 ? (
             <div className="divide-y dark:divide-gray-700">
               {chatList.map((chat) => (
                 <TooltipProvider key={chat.refid}>
@@ -34,7 +48,8 @@ function ChatList({ setActiveChat }) {
                     <TooltipTrigger asChild>
                       <div
                         onClick={() => {
-                          setActiveChat(chat.refid), setchatname(chat.name);
+                          setActiveChat(chat.refid);
+                          setchatname(chat.name);
                         }}
                         className="
                           p-4 
