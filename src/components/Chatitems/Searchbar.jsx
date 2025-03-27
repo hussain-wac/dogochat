@@ -1,61 +1,32 @@
 import React, { useState } from "react";
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  doc, 
-  setDoc, 
-  updateDoc, 
-  arrayUnion 
-} from "firebase/firestore";
+import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../../firebase";
-import { useAtomValue } from "jotai";
-import { globalState } from "../../jotai/globalState";
+import { useAtomValue, useSetAtom } from "jotai";
+import { chatname, globalState } from "../../jotai/globalState";
+import { useSWRConfig } from "swr";
+import { useSearchUsers } from "../../hooks/useSearchUsers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Command, 
-  CommandEmpty, 
-  CommandGroup, 
-  CommandInput, 
-  CommandItem, 
-  CommandList 
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
 } from "@/components/ui/command";
-import { 
-  SearchIcon, 
-  UserPlusIcon 
-} from "lucide-react";
+import { SearchIcon, UserPlusIcon, Loader2 } from "lucide-react";
 
 function SearchBar({ setActiveChat }) {
   const user = useAtomValue(globalState);
+  const { mutate } = useSWRConfig();
   const [search, setSearch] = useState("");
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  const handleSearch = async () => {
-    if (!search.trim()) return;
-    setLoading(true);
+  const { users, isLoading } = useSearchUsers(search);
 
-    try {
-      const usersRef = collection(db, "users");
-      const q = query(
-        usersRef,
-        where("username", ">=", search.toLowerCase()),
-        where("username", "<=", search.toLowerCase() + "\uf8ff")
-      );
-      const querySnapshot = await getDocs(q);
+  const setchatname = useSetAtom(chatname);
 
-      if (!querySnapshot.empty) {
-        const foundUsers = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setResults(foundUsers.filter(u => u.uid !== user.uid));
-      } else {
-        setResults([]);
-      }
-    } catch (error) {
-      console.error("Search error:", error);
-    } finally {
-      setLoading(false);
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
     }
   };
 
@@ -70,7 +41,7 @@ function SearchBar({ setActiveChat }) {
         {
           chatusername1: user.displayName,
           chatusername2: selectedUser.username,
-          messages: []
+          messages: [],
         },
         { merge: true }
       );
@@ -79,18 +50,26 @@ function SearchBar({ setActiveChat }) {
       const selectedUserRef = doc(db, "users", selectedUser.uid);
 
       await updateDoc(currentUserRef, {
-        chatlist: arrayUnion({ name: selectedUser.username, type: "private", refid: chatId })
+        chatlist: arrayUnion({
+          name: selectedUser.username,
+          type: "private",
+          refid: chatId,
+        }),
       });
 
       await updateDoc(selectedUserRef, {
-        chatlist: arrayUnion({ name: user.displayName, type: "private", refid: chatId })
+        chatlist: arrayUnion({
+          name: user.displayName,
+          type: "private",
+          refid: chatId,
+        }),
       });
 
-      // ✅ Set active chat immediately
+      mutate(`chatList-${user.uid}`);
+
       setActiveChat(chatId);
 
       setSearch("");
-      setResults([]);
     } catch (error) {
       console.error("Error starting chat:", error);
     }
@@ -99,38 +78,43 @@ function SearchBar({ setActiveChat }) {
   return (
     <div className="p-4 border-b dark:border-gray-700">
       <div className="flex space-x-2">
-        <Input 
-          placeholder="Search users..." 
+        <Input
+          placeholder="Search users..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="flex-1"
         />
-        <Button 
-          onClick={handleSearch} 
-          variant="outline"
-          disabled={loading}
-        >
+        <Button variant="outline" disabled>
           <SearchIcon className="h-4 w-4" />
         </Button>
       </div>
 
-      {results.length > 0 && (
+      {isLoading && (
+        <div className="mt-2 flex items-center justify-center">
+          <Loader2 className="animate-spin h-6 w-6 text-gray-500" />
+        </div>
+      )}
+
+      {users.length > 0 && !isLoading && (
         <Command className="mt-2">
           <CommandList>
             <CommandEmpty>No users found.</CommandEmpty>
             <CommandGroup>
-              {results.map((user) => (
-                <CommandItem 
-                  key={user.id} 
+              {users.map((user) => (
+                <CommandItem
+                  key={user.id}
                   className="flex justify-between items-center"
                 >
                   <div className="flex items-center space-x-2">
                     <UserPlusIcon className="h-4 w-4 text-gray-500" />
                     <span>{user.username}</span>
                   </div>
-                  <Button 
-                    size="sm" 
-                    onClick={() => startChat(user)}
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      startChat(user), setchatname(user.username);
+                    }}
                   >
                     Start Chat
                   </Button>
@@ -143,5 +127,4 @@ function SearchBar({ setActiveChat }) {
     </div>
   );
 }
-
 export default SearchBar;

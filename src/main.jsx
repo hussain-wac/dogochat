@@ -5,7 +5,7 @@ import App from './App.jsx'
 import { ThemeProvider } from './components/theme-provider.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+  <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
   <StrictMode>
     <App />
   </StrictMode>

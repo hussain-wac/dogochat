@@ -1,7 +1,7 @@
 import useSWR from "swr";
 import { useAtomValue } from "jotai";
 import { globalState } from "../jotai/globalState";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 const fetchChatList = (uid) => {
@@ -31,18 +31,31 @@ const fetchChatList = (uid) => {
 const useChatList = () => {
   const user = useAtomValue(globalState);
 
-  const { data: chatList = [], error ,isLoading } = useSWR(
+  const { data: chatList = [], error, isLoading, mutate } = useSWR(
     user?.uid ? `chatList-${user.uid}` : null,
     () => fetchChatList(user.uid),
     {
-      revalidateOnFocus: true, 
-      dedupingInterval: 10000, 
+      revalidateOnFocus: true,
+      dedupingInterval: 100,
     }
   );
 
-  if (error) console.error("Error fetching chat list:", error);
+  const deleteChat = async (chatRefId) => {
+    if (!user?.uid) return;
 
-  return { chatList, user ,isLoading};
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      await updateDoc(userDocRef, {
+        chatlist: chatList.filter((chat) => chat.refid !== chatRefId),
+      });
+
+      mutate(); // Refresh chat list
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+    }
+  };
+
+  return { chatList, isLoading, deleteChat };
 };
 
 export default useChatList;
