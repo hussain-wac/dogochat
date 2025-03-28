@@ -1,10 +1,4 @@
-import React, { useState } from "react";
-import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
-import { db } from "../../firebase";
-import { useAtomValue, useSetAtom } from "jotai";
-import { chatdetails,  globalState } from "../../jotai/globalState";
-import { useSWRConfig } from "swr";
-import { useSearchUsers } from "../../hooks/useSearchUsers";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,68 +9,17 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { SearchIcon, UserPlusIcon, Loader2 } from "lucide-react";
-
+import useSearchlogic from "../../hooks/useSearchlogic";
 function SearchBar({ setActiveChat }) {
-  const user = useAtomValue(globalState);
-  const { mutate } = useSWRConfig();
-  const [search, setSearch] = useState("");
-  const setdet= useSetAtom(chatdetails);
-  const { users, isLoading } = useSearchUsers(search);
-
-
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-    }
-  };
-
-  const startChat = async (selectedUser) => {
-    if (!user) return;
-    const chatId = [user.uid, selectedUser.uid].sort().join("_");
-    const chatRef = doc(db, "chats", chatId);
-
-    try {
-      await setDoc(
-        chatRef,
-        {
-          chatusername1: user.displayName,
-          chatusername2: selectedUser.username,
-          messages: [],
-        },
-        { merge: true }
-      );
-
-      const currentUserRef = doc(db, "users", user.uid);
-      const selectedUserRef = doc(db, "users", selectedUser.uid);
-      // console.log(selectedUser)
-
-      await updateDoc(currentUserRef, {
-        chatlist: arrayUnion({
-          name: selectedUser.username,
-          type: "private",
-          refid: chatId,
-          profilePic : selectedUser.photoURL
-
-        }),
-      });
-
-      await updateDoc(selectedUserRef, {
-        chatlist: arrayUnion({
-          name: user.displayName,
-          type: "private",
-          refid: chatId,
-        }),
-      });
-
-      mutate(`chatList-${user.uid}`);
-
-      setActiveChat(chatId);
-
-      setSearch("");
-    } catch (error) {
-      console.error("Error starting chat:", error);
-    }
-  };
+  const {
+    users,
+    isLoading,
+    setdet,
+    setSearch,
+    startChat,
+    search,
+    handleKeyDown,
+  } = useSearchlogic(setActiveChat);
 
   return (
     <div className="p-4 border-b dark:border-gray-700">
@@ -116,9 +59,10 @@ function SearchBar({ setActiveChat }) {
                   <Button
                     size="sm"
                     onClick={() => {
-                      startChat(user), setdet({
-                        chatname: user.username, 
-                      })
+                      startChat(user),
+                        setdet({
+                          chatname: user.username,
+                        });
                     }}
                   >
                     Start Chat
