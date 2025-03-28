@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -29,14 +30,20 @@ import { Button } from "@/components/ui/button";
 
 function ChatList({ setActiveChat }) {
   const { chatList, isLoading, deleteChat } = useChatList();
-
   const setChatdet = useSetAtom(chatdetails);
   const [open, setOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
+  const navigate = useNavigate();
 
   const confirmDelete = (refid) => {
     setChatToDelete(refid);
     setOpen(true);
+  };
+
+  const handleChatSelect = (refid, name, profilePic) => {
+    setActiveChat(refid, name); // Call the passed function for navigation
+    setChatdet({ chatname: name, profilePic });
+    navigate(`/home/${name}`); // Navigate to sub-route
   };
 
   return (
@@ -69,13 +76,9 @@ function ChatList({ setActiveChat }) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
-                          onClick={() => {
-                            setActiveChat(chat.refid);
-                            setChatdet({
-                              chatname: chat.name,
-                              profilePic: chat.profilePic,
-                            });
-                          }}
+                          onClick={() =>
+                            handleChatSelect(chat.refid, chat.name, chat.profilePic)
+                          }
                           className="
                             p-4 
                             hover:bg-gray-100 
@@ -162,6 +165,7 @@ function ChatList({ setActiveChat }) {
                   deleteChat(chatToDelete);
                 }
                 setOpen(false);
+                navigate("/home"); // Navigate back to /home after deletion
               }}
             >
               Delete

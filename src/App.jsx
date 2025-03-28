@@ -13,6 +13,8 @@ import {
 } from "react-router-dom";
 import Login from "./Login";
 import Home from "./components/Home";
+import ChatWindow from "./components/Chatitems/ChatWindow";
+
 function App() {
   const user = useAtomValue(globalState);
 
@@ -33,14 +35,8 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route
-                path="/home"
-                element={
-                  <ProtectedRoute>
-                    <Home />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/home" element={<Home />} />
+              <Route path="/home/:username" element={<Home />} />
             </Route>
           </Routes>
         </Router>

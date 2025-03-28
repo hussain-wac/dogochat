@@ -1,51 +1,55 @@
 import React, { useState } from "react";
-import { 
-  ResizablePanelGroup, 
-  ResizablePanel, 
-  ResizablePanelHandle 
+import { Outlet, useNavigate, useParams } from "react-router-dom";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelHandle,
 } from "@/components/ui/resizable";
 import ChatList from "./Chatitems/Chatlist";
-import ChatWindow from "./Chatitems/ChatWindow";
 import SearchBar from "./Chatitems/Searchbar";
+import ChatWindow from "./Chatitems/ChatWindow";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import { motion } from "framer-motion";
 
 function Home() {
-  const [activeChat, setActiveChat] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const navigate = useNavigate();
+  const { username } = useParams(); // Get the username from the URL
 
   // Animation variants for the button
   const buttonVariants = {
-    hover: { 
-      scale: 1.1, 
+    hover: {
+      scale: 1.1,
       rotate: 90,
-      transition: { duration: 0.2 }
+      transition: { duration: 0.2 },
     },
-    tap: { 
+    tap: {
       scale: 0.95,
-      transition: { duration: 0.1 }
+      transition: { duration: 0.1 },
     },
     initial: {
       scale: 1,
-      rotate: 0
-    }
+      rotate: 0,
+    },
+  };
+
+  // Function to handle chat selection and navigation
+  const handleSetActiveChat = (chatId, username) => {
+    navigate(`/home/${username}`); // Navigate to the sub-route
   };
 
   return (
     <div className="h-full flex">
-      <ResizablePanelGroup 
-        direction="horizontal" 
-        className="flex-1"
-      >
-        <ResizablePanel 
-          defaultSize={30} 
-          minSize={20} 
+      <ResizablePanelGroup direction="horizontal" className="flex-1">
+        <ResizablePanel
+          defaultSize={30}
+          minSize={20}
           className="border-r dark:border-gray-700 flex flex-col"
         >
           {/* Header with Animated Plus Button */}
@@ -58,7 +62,7 @@ function Home() {
                   whileHover="hover"
                   whileTap="tap"
                 >
-                  <Button 
+                  <Button
                     variant="outline"
                     size="icon"
                     className="
@@ -76,30 +80,29 @@ function Home() {
                   </Button>
                 </motion.div>
               </PopoverTrigger>
-              <PopoverContent 
-                className="w-80 p-0" 
-                align="end"
-                side="bottom"
-              >
-                <SearchBar setActiveChat={setActiveChat} />
+              <PopoverContent className="w-80 p-0" align="end" side="bottom">
+                <SearchBar setActiveChat={handleSetActiveChat} />
               </PopoverContent>
             </Popover>
           </div>
 
           {/* Chat List */}
           <div className="flex-1 overflow-hidden">
-            <ChatList setActiveChat={setActiveChat} />
+            <ChatList setActiveChat={handleSetActiveChat} />
           </div>
         </ResizablePanel>
 
         <ResizablePanelHandle className="dark:bg-gray-700" />
-        
-        <ResizablePanel 
-          defaultSize={70} 
-          minSize={50} 
-          className="h-full"
-        >
-          <ChatWindow activeChat={activeChat} />
+
+        <ResizablePanel defaultSize={70} minSize={50} className="h-full">
+          {/* Render ChatWindow if username exists, otherwise show placeholder */}
+          {username ? (
+            <ChatWindow />
+          ) : (
+            <div className="flex items-center justify-center text-gray-500 h-full">
+              Select a chat to start messaging
+            </div>
+          )}
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

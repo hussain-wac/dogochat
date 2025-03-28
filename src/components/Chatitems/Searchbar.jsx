@@ -10,16 +10,16 @@ import {
 } from "@/components/ui/command";
 import { SearchIcon, UserPlusIcon, Loader2 } from "lucide-react";
 import useSearchlogic from "../../hooks/useSearchlogic";
+
 function SearchBar({ setActiveChat }) {
   const {
     users,
     isLoading,
-    setdet,
     setSearch,
     startChat,
     search,
     handleKeyDown,
-  } = useSearchlogic(setActiveChat);
+  } = useSearchlogic({ setActiveChat }); 
 
   return (
     <div className="p-4 border-b dark:border-gray-700">
@@ -59,10 +59,7 @@ function SearchBar({ setActiveChat }) {
                   <Button
                     size="sm"
                     onClick={() => {
-                      startChat(user),
-                        setdet({
-                          chatname: user.username,
-                        });
+                      startChat(user);
                     }}
                   >
                     Start Chat
@@ -76,4 +73,5 @@ function SearchBar({ setActiveChat }) {
     </div>
   );
 }
+
 export default SearchBar;
