@@ -2,6 +2,7 @@ import { collection, addDoc, doc, updateDoc, arrayUnion, getDoc } from "firebase
 
 export const sendMessage = async (db, activeChat, newMessage, userId, scrollToBottom) => {
   if (!newMessage.trim() || !activeChat) return;
+
   try {
     const messageRef = await addDoc(
       collection(db, "chats", activeChat, "messages"),
@@ -10,14 +11,21 @@ export const sendMessage = async (db, activeChat, newMessage, userId, scrollToBo
         text: newMessage,
         timestamp: new Date(),
         status: "sent",
-        readBy: [userId],
+        readBy: [userId], // Sender has "read" it by default
       }
     );
 
+    // Check the message status before updating to "delivered"
     setTimeout(async () => {
-      await updateDoc(messageRef, {
-        status: "delivered",
-      });
+      const messageDoc = await getDoc(messageRef);
+      const currentStatus = messageDoc.data().status;
+
+      // Only update to "delivered" if it hasn't been marked as "read"
+      if (currentStatus === "sent") {
+        await updateDoc(messageRef, {
+          status: "delivered",
+        });
+      }
     }, 1000);
 
     setTimeout(() => scrollToBottom("smooth"), 100);
@@ -59,7 +67,6 @@ export const fetchChatId = async (db, user, username, setActiveChat) => {
 
     const chat = chatList.find((c) => c.name === username);
     if (chat) {
-      console.log("Found chat:", chat);
       setActiveChat(chat.refid);
     } else {
       console.log("No chat found for username:", username);

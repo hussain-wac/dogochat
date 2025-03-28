@@ -32,14 +32,9 @@ const useChatWindow = () => {
       revalidateOnReconnect: true,
     }
   );
-
   useEffect(() => {
     fetchChatId(db, user, username, setActiveChat);
   }, [username, user]);
-
-  useEffect(() => {
-    console.log("Current state:", { username, activeChat, isLoading, messages });
-  }, [username, activeChat, isLoading, messages]);
 
   const groupedMessages = useMemo(() => {
     const groups = {};
@@ -67,7 +62,6 @@ const useChatWindow = () => {
     setShowEmojiPicker(false);
   };
 
-  // Setup intersection observer for messages
   useEffect(() => {
     if (!scrollAreaRef.current || !messages.length || !activeChat) return;
 
@@ -98,7 +92,7 @@ const useChatWindow = () => {
       const handleScroll = () => {
         const isBottom = checkIsAtBottom(scrollAreaRef);
         setIsAtBottom(isBottom);
-        if (isBottom) setNewMessagesCount(0); // Reset count when at bottom
+        if (isBottom) setNewMessagesCount(0); 
       };
       scrollElement.addEventListener("scroll", handleScroll);
       return () => scrollElement.removeEventListener("scroll", handleScroll);
@@ -114,7 +108,7 @@ const useChatWindow = () => {
 
     if (!isLastMessageFromUser) {
       const isNearBottom = scrollElement && 
-        (scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight < 100); // Within 100px of bottom
+        (scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight < 100); 
       
       if (
         !isNearBottom && // Only increment if not near bottom
