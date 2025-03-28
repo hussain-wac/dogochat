@@ -17,14 +17,12 @@ const useSearchlogic = ({ setActiveChat }) => {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      // Add any logic here if needed for Enter key press
     }
   };
 
   const startChat = async (selectedUser) => {
     if (!user) return;
 
-    // Ensure all usernames are lowercase
     const currentUsername = user.displayName.toLowerCase();
     const selectedUsername = selectedUser.username.toLowerCase();
 
@@ -32,7 +30,6 @@ const useSearchlogic = ({ setActiveChat }) => {
     const chatRef = doc(db, "chats", chatId);
 
     try {
-      // Store chat data with lowercase usernames
       await setDoc(
         chatRef,
         {
@@ -46,7 +43,6 @@ const useSearchlogic = ({ setActiveChat }) => {
       const currentUserRef = doc(db, "users", user.uid);
       const selectedUserRef = doc(db, "users", selectedUser.uid);
 
-      // Update current user's chatlist with lowercase username
       await updateDoc(currentUserRef, {
         chatlist: arrayUnion({
           name: selectedUsername,
@@ -56,7 +52,6 @@ const useSearchlogic = ({ setActiveChat }) => {
         }),
       });
 
-      // Update selected user's chatlist with lowercase username
       await updateDoc(selectedUserRef, {
         chatlist: arrayUnion({
           name: currentUsername,
@@ -67,14 +62,12 @@ const useSearchlogic = ({ setActiveChat }) => {
 
       mutate(`chatList-${user.uid}`);
 
-      // Pass lowercase username to setActiveChat
       setActiveChat(chatId, selectedUsername);
       setdet({
         chatname: selectedUsername,
         profilePic: selectedUser.photoURL,
       });
 
-      // Navigate with lowercase username
       navigate(`/home/${selectedUsername}`);
 
       setSearch("");
@@ -93,5 +86,4 @@ const useSearchlogic = ({ setActiveChat }) => {
     handleKeyDown,
   };
 };
-
 export default useSearchlogic;
