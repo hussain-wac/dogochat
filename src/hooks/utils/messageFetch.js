@@ -1,23 +1,22 @@
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 
-export const fetchMessages = (db, activeChat, setMessages) => {
-  if (!activeChat) return;
+export const fetchMessages = (db, chatId, setMessages) => {
+  if (!chatId) return () => {};
 
-  const messagesRef = collection(db, "chats", activeChat, "messages");
-  const q = query(messagesRef, orderBy("timestamp"));
+  const messagesRef = collection(db, "chats", chatId, "messages");
+  const q = query(messagesRef, orderBy("timestamp", "asc"));
 
-  return new Promise((resolve) => {
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        timestamp: doc.data().timestamp.toDate
-          ? doc.data().timestamp.toDate()
-          : doc.data().timestamp,
-      }));
-      setMessages(msgs);
-      resolve(msgs);
-    });
-    return () => unsubscribe();
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const fetchedMessages = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      timestamp: doc.data().timestamp.toDate(),
+    }));
+    console.log(`Fetched messages for chatId: ${chatId}`, fetchedMessages);
+    setMessages(fetchedMessages);
+  }, (error) => {
+    console.error(`Error fetching messages for chatId: ${chatId}`, error);
   });
+
+  return unsubscribe;
 };

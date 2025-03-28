@@ -35,5 +35,4 @@ const ChatHeader = ({ chatdet, username, isOpponentOnline, lastOnline }) => {
     </CardHeader>
   );
 };
-
 export default ChatHeader;
