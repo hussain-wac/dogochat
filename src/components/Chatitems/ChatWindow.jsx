@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/popover";
 
 const formatMessageTime = (timestamp) => {
-
   const date =
     timestamp instanceof Date
       ? timestamp
@@ -132,43 +131,38 @@ function ChatWindow({ activeChat }) {
                           } mb-2`}
                         >
                           <div
-                            className={`flex items-end space-x-2 ${
-                              msg.sender === user.uid ? "flex-row-reverse" : ""
+                            className={`p-3 rounded-xl max-w-[70%] ${
+                              msg.sender === user.uid
+                                ? "bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                             }`}
                           >
-                            <div
-                              className={`p-3 rounded-xl max-w-[70%] ${
-                                msg.sender === user.uid
-                                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100"
-                                  : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                              }`}
-                            >
-                              {msg.text}
-                            </div>
+                            {msg.text}
+                          </div>
+                          <div
+                            className={`text-xs text-gray-500 flex items-center space-x-1 mt-1 ${
+                              msg.sender === user.uid
+                                ? "justify-end"
+                                : "justify-start"
+                            }`}
+                          >
+                            <span>{formatMessageTime(msg.timestamp)}</span>
                             {msg.sender === user.uid && (
-                              <div className="text-xs text-gray-500 flex flex-col items-end space-y-1">
-                                <div className="flex items-center space-x-1">
-                                  {msg.status === "read" ? (
-                                    <div className="flex space-x-0.5">
-                                      <CheckIcon className="h-4 w-4 text-blue-500" />
-                                      <CheckIcon className="h-4 w-4 text-blue-500 -ml-2.5" />
-                                    </div>
-                                  ) : msg.status === "delivered" ? (
-                                    <div className="flex space-x-0.5">
-                                      <CheckIcon className="h-4 w-4 text-gray-500" />
-                                      <CheckIcon className="h-4 w-4 text-gray-500 -ml-2.5" />
-                                    </div>
-                                  ) : (
-                                    <CheckIcon className="h-4 w-4 text-gray-300" />
-                                  )}
-                                </div>
-                                <span>{formatMessageTime(msg.timestamp)}</span>
-                              </div>
-                            )}
-                            {msg.sender !== user.uid && (
-                              <span className="text-xs text-gray-500">
-                                {formatMessageTime(msg.timestamp)}
-                              </span>
+                              <>
+                                {msg.status === "read" ? (
+                                  <div className="flex space-x-0.5">
+                                    <CheckIcon className="h-4 w-4 text-blue-500" />
+                                    <CheckIcon className="h-4 w-4 text-blue-500 -ml-2.5" />
+                                  </div>
+                                ) : msg.status === "delivered" ? (
+                                  <div className="flex space-x-0.5">
+                                    <CheckIcon className="h-4 w-4 text-gray-500" />
+                                    <CheckIcon className="h-4 w-4 text-gray-500 -ml-2.5" />
+                                  </div>
+                                ) : (
+                                  <CheckIcon className="h-4 w-4 text-gray-300" />
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
