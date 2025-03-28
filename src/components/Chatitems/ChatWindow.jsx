@@ -53,7 +53,7 @@ function ChatWindow() {
     <div className="flex flex-col h-full">
       <Card className="flex flex-col h-full rounded-none border-none shadow-none">
         {/* Header */}
-        <CardHeader className="border-b dark:border-gray-700 flex flex-row items-center space-x-3 h-16 min-h-[4rem] sticky top-0 z-10 bg-white dark:bg-gray-900">
+        <CardHeader className="border-b dark:border-neutral-700 flex flex-row items-center space-x-3 h-16 min-h-[4rem] sticky top-0 z-10 bg-white dark:bg-neutral-900">
           {chatdet.profilePic ? (
             <img
               src={chatdet.profilePic}
@@ -61,7 +61,7 @@ function ChatWindow() {
               className="w-10 h-10 rounded-full object-cover"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-neutral-700 flex items-center justify-center">
               <MessageCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
             </div>
           )}
@@ -86,7 +86,7 @@ function ChatWindow() {
                             ? "Today"
                             : new Date(date).toLocaleDateString()}
                         </span>
-                        <div className="absolute left-0 right-0 top-1/2 border-t dark:border-gray-700"></div>
+                        <div className="absolute left-0 right-0 top-1/2 border-t dark:border-neutral-700"></div>
                       </div>
                       {dayMessages.map((msg) => (
                         <div
@@ -101,7 +101,7 @@ function ChatWindow() {
                           <div
                             className={`p-3 rounded-xl max-w-[70%] ${
                               msg.sender === user.uid
-                                ? "bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100"
+                                ? "bg-orange-100 dark:bg-orange-900/50 text-orange-900 dark:text-orange-100"
                                 : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                             }`}
                           >
@@ -119,8 +119,8 @@ function ChatWindow() {
                               <>
                                 {msg.status === "read" ? (
                                   <div className="flex space-x-0.5">
-                                    <CheckIcon className="h-4 w-4 text-blue-500" />
-                                    <CheckIcon className="h-4 w-4 text-blue-500 -ml-2.5" />
+                                    <CheckIcon className="h-4 w-4 text-orange-500" />
+                                    <CheckIcon className="h-4 w-4 text-orange-500 -ml-2.5" />
                                   </div>
                                 ) : msg.status === "delivered" ? (
                                   <div className="flex space-x-0.5">
@@ -144,7 +144,7 @@ function ChatWindow() {
               <div className="sticky bottom-4 flex justify-center animate-bounce">
                 <Button
                   variant="outline"
-                  className="rounded-full bg-blue-500 text-white flex items-center space-x-2"
+                  className="rounded-full bg-orange-500 text-white flex items-center space-x-2"
                   onClick={() => scrollToBottom("smooth")}
                 >
                   <span>New Messages ({newMessagesCount})</span>
@@ -177,10 +177,28 @@ function ChatWindow() {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                className="flex-1"
+                className="flex-1 border-orange-500"
               />
 
-              <Button onClick={sendMessage} disabled={!newMessage.trim()}>
+              <Button
+                onClick={sendMessage}
+                disabled={!newMessage.trim()}
+                className={`
+    flex items-center justify-center
+    px-4 py-2
+    rounded-full
+    bg-orange-500 hover:bg-orange-600
+    dark:bg-[#00A884] dark:hover:bg-[#008F72]
+    text-white
+    font-medium
+    transition-colors duration-200
+    disabled:bg-gray-300 disabled:text-gray-500
+    disabled:dark:bg-gray-600 disabled:dark:text-gray-400
+    disabled:cursor-not-allowed
+    w-full sm:w-auto
+    shadow-sm hover:shadow-md
+  `}
+              >
                 <SendHorizontalIcon className="mr-2 h-4 w-4" />
                 Send
               </Button>
