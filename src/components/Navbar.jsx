@@ -22,8 +22,8 @@ function Navbar() {
   const { setTheme } = useTheme();
 
   const handleLogout = () => {
-    setUser(null);
     <Navigate to="/" replace />;
+    setUser(null);
   };
 
   return (
