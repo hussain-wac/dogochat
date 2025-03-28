@@ -41,9 +41,9 @@ function ChatList({ setActiveChat }) {
   };
 
   const handleChatSelect = (refid, name, profilePic) => {
-    setActiveChat(refid, name); // Call the passed function for navigation
+    setActiveChat(refid, name);
     setChatdet({ chatname: name, profilePic });
-    navigate(`/home/${name}`); // Navigate to sub-route
+    navigate(`/home/${name}`); 
   };
 
   return (

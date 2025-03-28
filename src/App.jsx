@@ -14,10 +14,12 @@ import {
 import Login from "./Login";
 import Home from "./components/Home";
 import ChatWindow from "./components/Chatitems/ChatWindow";
+import usePresence from "./hooks/usePresence";
 
 function App() {
   const user = useAtomValue(globalState);
 
+  usePresence();
   return (
     <div>
       <Provider>
