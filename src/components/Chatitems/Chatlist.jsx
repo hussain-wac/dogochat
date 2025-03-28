@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 function ChatList({ setActiveChat }) {
   const { chatList, isLoading, deleteChat } = useChatList();
@@ -43,7 +44,13 @@ function ChatList({ setActiveChat }) {
   const handleChatSelect = (refid, name, profilePic) => {
     setActiveChat(refid, name);
     setChatdet({ chatname: name, profilePic });
-    navigate(`/home/${name}`); 
+    navigate(`/home/${name}`);
+  };
+
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -104,12 +111,26 @@ function ChatList({ setActiveChat }) {
                           )}
 
                           <div className="flex-1 overflow-hidden">
-                            <div className="font-semibold truncate">
-                              {chat.name}
+                            <div className="flex items-center justify-between">
+                              <div className="font-semibold truncate">
+                                {chat.name}
+                              </div>
+                              {chat.lastMessage && (
+                                <span className="text-xs text-gray-500">
+                                  {formatTimestamp(chat.lastMessage.timestamp)}
+                                </span>
+                              )}
                             </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                              Last message placeholder
-                            </p>
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                {chat.lastMessage?.text || "No messages yet"}
+                              </p>
+                              {chat.unreadCount > 0 && (
+                                <Badge variant="destructive" className="ml-2">
+                                  {chat.unreadCount}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
 
                           {/* Options Menu */}
@@ -147,7 +168,6 @@ function ChatList({ setActiveChat }) {
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -165,7 +185,7 @@ function ChatList({ setActiveChat }) {
                   deleteChat(chatToDelete);
                 }
                 setOpen(false);
-                navigate("/home"); // Navigate back to /home after deletion
+                navigate("/home");
               }}
             >
               Delete
