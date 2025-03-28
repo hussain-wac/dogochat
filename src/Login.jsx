@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import { signInWithPopup, GoogleAuthProvider, updateProfile } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { auth, db } from "./firebase";
+import { ref, set } from "firebase/database";
+import { auth, db, realtimeDb } from "./firebase";
 import { LogIn } from "lucide-react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { globalState } from "./jotai/globalState";
@@ -24,20 +25,31 @@ const Login = () => {
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
+      const username = user.displayName.toLowerCase();
+
       if (!userDocSnap.exists()) {
         await setDoc(userDocRef, {
           uid: user.uid,
-          username: user.displayName.toLowerCase(),
+          username: username,
           email: user.email,
           photoURL: user.photoURL,
           createdAt: new Date().toISOString(),
-          chatlist: [] 
+          chatlist: [],
         });
         await updateProfile(user, {
           displayName: user.displayName,
           photoURL: user.photoURL,
         });
       }
+
+      // Initialize presence data in Realtime Database
+      const presenceRef = ref(realtimeDb, `presence/${username}`);
+      await set(presenceRef, {
+        online: true,
+        lastOnline: null,
+      });
+      console.log(`Initialized presence for ${username} on login`);
+
       setUser({
         uid: user.uid,
         displayName: user.displayName,

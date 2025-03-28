@@ -2,13 +2,12 @@ import React from "react";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageCircleIcon } from "lucide-react";
 
-const ChatHeader = ({ chatdet, username }) => {
-  const formatLastSeen = (lastSeen) => {
-    if (!lastSeen) return "";
-    const date = new Date(lastSeen);
+const ChatHeader = ({ chatdet, username, isOpponentOnline, lastOnline }) => {
+  const formatLastSeen = (timestamp) => {
+    if (!timestamp) return "Last seen: Unknown";
+    const date = new Date(timestamp);
     return `Last seen: ${date.toLocaleString()}`;
   };
-
 
   return (
     <CardHeader className="border-b dark:border-neutral-700 flex flex-row items-center space-x-3 h-16 min-h-[4rem] sticky top-0 z-10 bg-white dark:bg-neutral-900">
@@ -26,10 +25,10 @@ const ChatHeader = ({ chatdet, username }) => {
       <div className="flex flex-col">
         <CardTitle>{chatdet.chatname || username}</CardTitle>
         <span className="text-sm text-gray-500">
-          {chatdet.online ? (
+          {isOpponentOnline ? (
             <span className="text-green-500">Online</span>
           ) : (
-            formatLastSeen(chatdet.lastSeen)
+            formatLastSeen(lastOnline)
           )}
         </span>
       </div>

@@ -1,5 +1,5 @@
+// src/hooks/useChatWindow.js
 import { useState, useRef, useEffect, useMemo } from "react";
-import { db } from "../firebase";
 import { chatdetails, globalState } from "../jotai/globalState";
 import { useAtomValue } from "jotai";
 import useSWR from "swr";
@@ -9,6 +9,8 @@ import { formatMessageTime } from "./utils/timeFormat";
 import { sendMessage, markMessageAsRead, fetchChatId } from "./utils/chatOperations";
 import { getScrollElement, checkIsAtBottom, scrollToBottom } from "./utils/scrollUtils";
 import { observeMessages } from "./utils/intersectionUtils";
+import { ref, onValue } from "firebase/database";
+import { db, realtimeDb } from "../firebase";
 
 const useChatWindow = () => {
   const { username } = useParams();
@@ -23,6 +25,8 @@ const useChatWindow = () => {
   const [newMessagesCount, setNewMessagesCount] = useState(0);
   const lastMessageCountRef = useRef(0);
   const observerRef = useRef(null);
+  const [isOpponentOnline, setIsOpponentOnline] = useState(false);
+  const [lastOnline, setLastOnline] = useState(null); // Add lastOnline
 
   const { data, error, isLoading } = useSWR(
     activeChat ? ["messages", activeChat] : null,
@@ -32,8 +36,43 @@ const useChatWindow = () => {
       revalidateOnReconnect: true,
     }
   );
+
   useEffect(() => {
     fetchChatId(db, user, username, setActiveChat);
+  }, [username, user]);
+
+  useEffect(() => {
+    if (!username || !user) {
+      console.log("No username or user available yet");
+      return;
+    }
+
+    console.log(`Setting up presence listener for: ${username}`);
+    const presenceRef = ref(realtimeDb, `presence/${username}`);
+
+    const handlePresenceChange = (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const isOnline = data?.online || false;
+        const lastOnlineTimestamp = data?.lastOnline || null;
+        console.log(`${username} is ${isOnline ? "online" : "offline"}`);
+        setIsOpponentOnline(isOnline);
+        setLastOnline(lastOnlineTimestamp);
+      } else {
+        console.log(`No presence data found for ${username}`);
+        setIsOpponentOnline(false);
+        setLastOnline(null);
+      }
+    };
+
+    const unsubscribe = onValue(presenceRef, handlePresenceChange, (error) => {
+      console.error("Presence listener error:", error);
+    });
+
+    return () => {
+      console.log(`Cleaning up presence listener for ${username}`);
+      unsubscribe();
+    };
   }, [username, user]);
 
   const groupedMessages = useMemo(() => {
@@ -47,7 +86,7 @@ const useChatWindow = () => {
   }, [messages]);
 
   const handleSendMessage = () => {
-    sendMessage(db, activeChat, newMessage, user.uid, (behavior) => 
+    sendMessage(db, activeChat, newMessage, user.uid, (behavior) =>
       scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, behavior)
     );
     setNewMessage("");
@@ -73,7 +112,7 @@ const useChatWindow = () => {
 
     const scrollElement = getScrollElement(scrollAreaRef);
     if (scrollElement) {
-      const messageElements = scrollElement.querySelectorAll('[data-message-id]');
+      const messageElements = scrollElement.querySelectorAll("[data-message-id]");
       messageElements.forEach((element) => {
         observerRef.current.observe(element);
       });
@@ -92,7 +131,7 @@ const useChatWindow = () => {
       const handleScroll = () => {
         const isBottom = checkIsAtBottom(scrollAreaRef);
         setIsAtBottom(isBottom);
-        if (isBottom) setNewMessagesCount(0); 
+        if (isBottom) setNewMessagesCount(0);
       };
       scrollElement.addEventListener("scroll", handleScroll);
       return () => scrollElement.removeEventListener("scroll", handleScroll);
@@ -107,13 +146,11 @@ const useChatWindow = () => {
     const isLastMessageFromUser = lastMessage.sender === user.uid;
 
     if (!isLastMessageFromUser) {
-      const isNearBottom = scrollElement && 
-        (scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight < 100); 
-      
-      if (
-        !isNearBottom && // Only increment if not near bottom
-        messages.length !== lastMessageCountRef.current
-      ) {
+      const isNearBottom =
+        scrollElement &&
+        scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight < 100;
+
+      if (!isNearBottom && messages.length !== lastMessageCountRef.current) {
         setNewMessagesCount((prev) => prev + 1);
       }
     }
@@ -132,6 +169,8 @@ const useChatWindow = () => {
       lastMessageCountRef.current = messages.length;
     }
   }, [activeChat, isLoading]);
+
+  console.log("status:", isOpponentOnline, "lastOnline:", lastOnline);
 
   return {
     username,
@@ -154,6 +193,8 @@ const useChatWindow = () => {
     error,
     isAtBottom,
     markMessageAsRead: handleMarkMessageAsRead,
+    isOpponentOnline,
+    lastOnline,
   };
 };
 

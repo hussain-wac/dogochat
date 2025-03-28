@@ -24,6 +24,8 @@ function ChatWindow() {
     groupedMessages,
     formatMessageTime,
     user,
+    isOpponentOnline, // Add this
+    lastOnline, // Add this
   } = useChatWindow();
 
   if (!username || !activeChat) {
@@ -37,7 +39,12 @@ function ChatWindow() {
   return (
     <div className="flex flex-col h-full">
       <Card className="flex flex-col h-full rounded-none border-none shadow-none">
-        <ChatHeader chatdet={chatdet} username={username} />
+        <ChatHeader
+          chatdet={chatdet}
+          username={username}
+          isOpponentOnline={isOpponentOnline} // Pass online status
+          lastOnline={lastOnline} // Pass last online timestamp
+        />
         <CardContent className="flex flex-col flex-1 p-0 overflow-hidden">
           <ChatMessages
             scrollAreaRef={scrollAreaRef}
