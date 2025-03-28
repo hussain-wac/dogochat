@@ -44,9 +44,9 @@ function ChatList({ setActiveChat }) {
   };
 
   const handleChatSelect = (refid, name, profilePic) => {
-    setActiveChat(refid, name);
+    setActiveChat(refid, name); // Set active chat and username
     setChatdet({ chatname: name, profilePic });
-    navigate(`/home/${name}`);
+    navigate(`/home/${name}`); // Navigate to the chat route
   };
 
   const formatTimestamp = (timestamp) => {

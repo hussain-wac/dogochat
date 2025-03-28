@@ -6,7 +6,7 @@ import ChatMessages from "./ChatWinowitems/ChatMessages";
 import NewMessagesBadge from "./ChatWinowitems/NewMessagesBadge";
 import MessageInput from "./ChatWinowitems/MessageInput";
 
-function ChatWindow() {
+function ChatWindow({ initialUsername }) {
   const {
     username,
     activeChat,
@@ -24,9 +24,9 @@ function ChatWindow() {
     groupedMessages,
     formatMessageTime,
     user,
-    isOpponentOnline, // Add this
-    lastOnline, // Add this
-  } = useChatWindow();
+    isOpponentOnline,
+    lastOnline,
+  } = useChatWindow(initialUsername);
 
   if (!username || !activeChat) {
     return (
@@ -42,8 +42,8 @@ function ChatWindow() {
         <ChatHeader
           chatdet={chatdet}
           username={username}
-          isOpponentOnline={isOpponentOnline} // Pass online status
-          lastOnline={lastOnline} // Pass last online timestamp
+          isOpponentOnline={isOpponentOnline}
+          lastOnline={lastOnline}
         />
         <CardContent className="flex flex-col flex-1 p-0 overflow-hidden">
           <ChatMessages

@@ -53,13 +53,11 @@ const fetchChatList = (uid, mutate) => {
           const qLastMessage = query(messagesRef, orderBy("timestamp", "desc"), limit(1));
 
           const unsubscribeMessages = onSnapshot(messagesRef, (snapshot) => {
-            // Calculate unread count based on readBy
             const unreadCount = snapshot.docs.filter(
               (doc) => !doc.data().readBy?.includes(uid) && doc.data().sender !== uid
             ).length;
             chatData.unreadCount = unreadCount;
 
-            // Get the last message (only update if snapshot includes it)
             const lastMessageDoc = snapshot.docs
               .sort((a, b) => b.data().timestamp.toDate() - a.data().timestamp.toDate())[0];
             chatData.lastMessage = lastMessageDoc
