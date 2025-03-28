@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,7 @@ import {
   PaperclipIcon,
   ChevronDownIcon,
   CheckIcon,
-  EyeIcon,
 } from "lucide-react";
-import useChatWindow from "../../hooks/useChatwindow";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmojiPicker from "emoji-picker-react";
 import {
@@ -20,64 +18,33 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import useChatWindow from "../../hooks/useChatwindow";
 
-const formatMessageTime = (timestamp) => {
-  const date =
-    timestamp instanceof Date
-      ? timestamp
-      : typeof timestamp === "string"
-      ? new Date(timestamp)
-      : timestamp.toDate();
-
-  const now = new Date();
-  const diffSeconds = (now.getTime() - date.getTime()) / 1000;
-
-  if (diffSeconds < 30) return "Just now";
-  if (diffSeconds < 60) return "1 min ago";
-  if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)} min ago`;
-
-  const hours = Math.floor(diffSeconds / 3600);
-  if (hours < 24) return `${hours} hr ago`;
-
-  const days = Math.floor(hours / 24);
-  return `${days} day${days > 1 ? "s" : ""} ago`;
-};
-
-function ChatWindow({ activeChat }) {
+function ChatWindow() {
   const {
+    username,
+    activeChat,
     messages,
     sendMessage,
     setNewMessage,
-    scrollAreaRef,
     newMessage,
-    user,
+    showEmojiPicker,
+    setShowEmojiPicker,
+    handleEmojiClick,
+    scrollAreaRef,
     isLoading,
     chatdet,
     newMessagesCount,
     scrollToBottom,
-  } = useChatWindow(activeChat);
+    groupedMessages,
+    formatMessageTime,
+    user,
+  } = useChatWindow();
 
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
-  const handleEmojiClick = (emojiObject) => {
-    setNewMessage((prevMessage) => prevMessage + emojiObject.emoji);
-    setShowEmojiPicker(false);
-  };
-
-  const groupedMessages = useMemo(() => {
-    const groups = {};
-    messages.forEach((msg) => {
-      const date = msg.timestamp.toDateString();
-      if (!groups[date]) groups[date] = [];
-      groups[date].push(msg);
-    });
-    return groups;
-  }, [messages]);
-
-  if (!activeChat) {
+  if (!username || !activeChat) {
     return (
       <div className="flex items-center justify-center text-gray-500 h-full">
-        Select a chat to start messaging
+        {username ? "Loading chat..." : "Select a chat to start messaging"}
       </div>
     );
   }
@@ -98,7 +65,7 @@ function ChatWindow({ activeChat }) {
               <MessageCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
             </div>
           )}
-          <CardTitle>{chatdet.chatname}</CardTitle>
+          <CardTitle>{chatdet.chatname || username}</CardTitle>
         </CardHeader>
 
         <CardContent className="flex flex-col flex-1 p-0 overflow-hidden">
@@ -124,6 +91,7 @@ function ChatWindow({ activeChat }) {
                       {dayMessages.map((msg) => (
                         <div
                           key={msg.id}
+                          data-message-id={msg.id} // Added data-message-id attribute
                           className={`flex flex-col ${
                             msg.sender === user.uid
                               ? "items-end"

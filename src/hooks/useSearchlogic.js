@@ -5,6 +5,7 @@ import { chatdetails, globalState } from "../jotai/globalState";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useSearchUsers } from "../hooks/useSearchUsers";
 import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { useNavigate } from "react-router-dom"; 
 
 const useSearchlogic = ({ setActiveChat }) => {
   const user = useAtomValue(globalState);
@@ -12,11 +13,13 @@ const useSearchlogic = ({ setActiveChat }) => {
   const [search, setSearch] = useState("");
   const setdet = useSetAtom(chatdetails);
   const { users, isLoading } = useSearchUsers(search);
+  const navigate = useNavigate(); 
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
     }
   };
+
   const startChat = async (selectedUser) => {
     if (!user) return;
     const chatId = [user.uid, selectedUser.uid].sort().join("_");
@@ -55,7 +58,13 @@ const useSearchlogic = ({ setActiveChat }) => {
 
       mutate(`chatList-${user.uid}`);
 
-      setActiveChat(chatId);
+      setActiveChat(chatId, selectedUser.username);
+      setdet({
+        chatname: selectedUser.username,
+        profilePic: selectedUser.photoURL,
+      });
+
+      navigate(`/home/${selectedUser.username}`);
 
       setSearch("");
     } catch (error) {
