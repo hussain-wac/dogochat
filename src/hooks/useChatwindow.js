@@ -1,4 +1,3 @@
-// src/hooks/useChatWindow.js
 import { useState, useRef, useEffect, useMemo } from "react";
 import { chatdetails, globalState } from "../jotai/globalState";
 import { useAtomValue } from "jotai";
@@ -27,6 +26,7 @@ const useChatWindow = () => {
   const observerRef = useRef(null);
   const [isOpponentOnline, setIsOpponentOnline] = useState(false);
   const [lastOnline, setLastOnline] = useState(null);
+  const hasMarkedRead = useRef(false);
 
   const { data, error, isLoading } = useSWR(
     activeChat ? ["messages", activeChat] : null,
@@ -42,25 +42,17 @@ const useChatWindow = () => {
   }, [username, user]);
 
   useEffect(() => {
-    if (!username || !user) {
-      console.log("No username or user available yet");
-      return;
-    }
+    if (!username || !user) return;
 
-    const lowercaseUsername = username.toLowerCase(); 
-    console.log(`Setting up presence listener for: ${lowercaseUsername}`);
+    const lowercaseUsername = username.toLowerCase();
     const presenceRef = ref(realtimeDb, `presence/${lowercaseUsername}`);
 
     const handlePresenceChange = (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const isOnline = data?.online || false;
-        const lastOnlineTimestamp = data?.lastOnline || null;
-        console.log(`${lowercaseUsername} is ${isOnline ? "online" : "offline"}`);
-        setIsOpponentOnline(isOnline);
-        setLastOnline(lastOnlineTimestamp);
+        setIsOpponentOnline(data?.online || false);
+        setLastOnline(data?.lastOnline || null);
       } else {
-        console.log(`No presence data found for ${lowercaseUsername}`);
         setIsOpponentOnline(false);
         setLastOnline(null);
       }
@@ -70,11 +62,30 @@ const useChatWindow = () => {
       console.error("Presence listener error:", error);
     });
 
-    return () => {
-      console.log(`Cleaning up presence listener for ${lowercaseUsername}`);
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [username, user]);
+
+  // Mark all unread messages as read when chat opens
+  useEffect(() => {
+    if (!activeChat || !messages.length || !user.uid || hasMarkedRead.current) return;
+
+    const unreadMessages = messages.filter(
+      (msg) => !msg.readBy?.includes(user.uid) && msg.sender !== user.uid
+    );
+    if (unreadMessages.length > 0) {
+      Promise.all(
+        unreadMessages.map((msg) => markMessageAsRead(db, activeChat, msg.id, user.uid))
+      ).then(() => {
+        hasMarkedRead.current = true; // Mark as read only after all updates complete
+      });
+    } else {
+      hasMarkedRead.current = true; // No unread messages, mark as done
+    }
+  }, [activeChat, messages, user.uid]);
+
+  useEffect(() => {
+    hasMarkedRead.current = false; // Reset when chat changes
+  }, [activeChat]);
 
   const groupedMessages = useMemo(() => {
     const groups = {};
@@ -170,8 +181,6 @@ const useChatWindow = () => {
       lastMessageCountRef.current = messages.length;
     }
   }, [activeChat, isLoading]);
-
-  console.log("status:", isOpponentOnline, "lastOnline:", lastOnline);
 
   return {
     username,

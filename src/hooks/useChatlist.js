@@ -1,69 +1,98 @@
 import useSWR from "swr";
 import { useAtomValue } from "jotai";
 import { globalState } from "../jotai/globalState";
-import { doc, onSnapshot, updateDoc, collection, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, collection, query, orderBy, limit } from "firebase/firestore";
 import { db } from "../firebase";
 
-const fetchChatList = async (uid) => {
+const fetchChatList = (uid, mutate) => {
   if (!uid) throw new Error("No user ID");
 
   const userDocRef = doc(db, "users", uid);
-  return new Promise((resolve, reject) => {
-    const unsubscribe = onSnapshot(
-      userDocRef,
-      async (docSnap) => {
-        if (docSnap.exists()) {
-          const rawChatList = docSnap.data().chatlist || [];
-          // Deduplicate based on refid
-          const uniqueChatList = rawChatList.reduce((acc, chat) => {
-            if (!acc.some((item) => item.refid === chat.refid)) {
-              acc.push({ ...chat, name: chat.name.toLowerCase() });
-            }
-            return acc;
-          }, []);
+  let unsubscribeUser = null;
+  const chatListeners = new Map();
+  let currentChatList = [];
 
-          // Fetch last message and unread count for each chat
-          const enrichedChatList = await Promise.all(
-            uniqueChatList.map(async (chat) => {
-              const messagesRef = collection(db, "chats", chat.refid, "messages");
-              const q = query(messagesRef, orderBy("timestamp", "desc"), limit(1));
-              const messagesSnap = await getDocs(q);
-              const lastMessage = messagesSnap.docs[0]?.data() || null;
+  const updateChatList = (newChatList) => {
+    newChatList.sort((a, b) => {
+      const timeA = a.lastMessage?.timestamp || 0;
+      const timeB = b.lastMessage?.timestamp || 0;
+      return timeB - timeA;
+    });
+    currentChatList = [...newChatList];
+    mutate(currentChatList, false);
+  };
 
-              // Count unread messages (assuming 'read' field exists)
-              const allMessagesSnap = await getDocs(collection(db, "chats", chat.refid, "messages"));
-              const unreadCount = allMessagesSnap.docs.filter(
-                (doc) => !doc.data().read && doc.data().sender !== uid
-              ).length;
+  unsubscribeUser = onSnapshot(userDocRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const rawChatList = docSnap.data().chatlist || [];
+      const uniqueChatList = rawChatList.reduce((acc, chat) => {
+        if (!acc.some((item) => item.refid === chat.refid)) {
+          acc.push({ ...chat, name: chat.name.toLowerCase() });
+        }
+        return acc;
+      }, []);
 
-              return {
-                ...chat,
-                lastMessage: lastMessage ? {
-                  text: lastMessage.text,
-                  timestamp: lastMessage.timestamp.toDate(),
-                } : null,
-                unreadCount,
-              };
-            })
-          );
+      const currentChatIds = new Set(uniqueChatList.map((chat) => chat.refid));
+      for (const [refid, unsubscribe] of chatListeners) {
+        if (!currentChatIds.has(refid)) {
+          unsubscribe();
+          chatListeners.delete(refid);
+        }
+      }
 
-          // Sort by last message timestamp (newest first)
-          enrichedChatList.sort((a, b) => {
-            const timeA = a.lastMessage?.timestamp || 0;
-            const timeB = b.lastMessage?.timestamp || 0;
-            return timeB - timeA;
+      const enrichedChatList = uniqueChatList.map((chat) => {
+        const existingChat = currentChatList.find((c) => c.refid === chat.refid) || {};
+        const chatData = {
+          ...chat,
+          lastMessage: existingChat.lastMessage || null,
+          unreadCount: existingChat.unreadCount || 0,
+        };
+
+        if (!chatListeners.has(chat.refid)) {
+          const messagesRef = collection(db, "chats", chat.refid, "messages");
+          const qLastMessage = query(messagesRef, orderBy("timestamp", "desc"), limit(1));
+
+          const unsubscribeMessages = onSnapshot(messagesRef, (snapshot) => {
+            // Calculate unread count based on readBy
+            const unreadCount = snapshot.docs.filter(
+              (doc) => !doc.data().readBy?.includes(uid) && doc.data().sender !== uid
+            ).length;
+            chatData.unreadCount = unreadCount;
+
+            // Get the last message (only update if snapshot includes it)
+            const lastMessageDoc = snapshot.docs
+              .sort((a, b) => b.data().timestamp.toDate() - a.data().timestamp.toDate())[0];
+            chatData.lastMessage = lastMessageDoc
+              ? {
+                  text: lastMessageDoc.data().text,
+                  timestamp: lastMessageDoc.data().timestamp.toDate(),
+                }
+              : null;
+
+            updateChatList(currentChatList.map((c) =>
+              c.refid === chat.refid ? { ...chatData } : c
+            ));
           });
 
-          resolve(enrichedChatList);
-        } else {
-          resolve([]);
+          chatListeners.set(chat.refid, unsubscribeMessages);
         }
-      },
-      (error) => reject(error)
-    );
 
-    return () => unsubscribe();
+        return chatData;
+      });
+
+      updateChatList(enrichedChatList);
+    } else {
+      chatListeners.forEach((unsubscribe) => unsubscribe());
+      chatListeners.clear();
+      updateChatList([]);
+    }
   });
+
+  return () => {
+    if (unsubscribeUser) unsubscribeUser();
+    chatListeners.forEach((unsubscribe) => unsubscribe());
+    chatListeners.clear();
+  };
 };
 
 const useChatList = () => {
@@ -71,10 +100,11 @@ const useChatList = () => {
 
   const { data: chatList = [], error, isLoading, mutate } = useSWR(
     user?.uid ? `chatList-${user.uid}` : null,
-    () => fetchChatList(user.uid),
+    () => fetchChatList(user.uid, mutate),
     {
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
       dedupingInterval: 100,
+      refreshInterval: 0,
     }
   );
 
@@ -86,8 +116,6 @@ const useChatList = () => {
       await updateDoc(userDocRef, {
         chatlist: chatList.filter((chat) => chat.refid !== chatRefId),
       });
-
-      mutate(); // Revalidate the chat list
     } catch (error) {
       console.error("Error deleting chat:", error);
     }

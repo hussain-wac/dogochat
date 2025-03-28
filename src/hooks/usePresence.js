@@ -9,10 +9,7 @@ const usePresence = () => {
   const user = useAtomValue(globalState);
 
   useEffect(() => {
-    if (!user || !user.displayName) {
-      console.log("No user available for presence update");
-      return;
-    }
+  
 
     const username = user.displayName.toLowerCase();
     const presenceRef = ref(realtimeDb, `presence/${username}`);
@@ -52,10 +49,7 @@ const usePresence = () => {
         }).catch((err) => console.error(`Failed to set offline: ${err.message}`));
       }
     };
-
     document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    // Cleanup
     return () => {
       unsubscribeConnected();
       document.removeEventListener("visibilitychange", handleVisibilityChange);

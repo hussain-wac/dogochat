@@ -36,6 +36,8 @@ function ChatList({ setActiveChat }) {
   const [chatToDelete, setChatToDelete] = useState(null);
   const navigate = useNavigate();
 
+  console.log("ChatList data:", chatList); // Debug: Check unreadCount values
+
   const confirmDelete = (refid) => {
     setChatToDelete(refid);
     setOpen(true);
@@ -97,7 +99,6 @@ function ChatList({ setActiveChat }) {
                             transition-colors
                           "
                         >
-                          {/* Profile Picture */}
                           {chat.profilePic ? (
                             <img
                               src={chat.profilePic}
@@ -133,7 +134,6 @@ function ChatList({ setActiveChat }) {
                             </div>
                           </div>
 
-                          {/* Options Menu */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <button className="p-2">
