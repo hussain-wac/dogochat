@@ -71,7 +71,6 @@ const useChatWindow = () => {
   useEffect(() => {
     if (!scrollAreaRef.current || !messages.length || !activeChat) return;
 
-    // Cleanup previous observer
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
@@ -99,7 +98,7 @@ const useChatWindow = () => {
       const handleScroll = () => {
         const isBottom = checkIsAtBottom(scrollAreaRef);
         setIsAtBottom(isBottom);
-        if (isBottom) setNewMessagesCount(0);
+        if (isBottom) setNewMessagesCount(0); // Reset count when at bottom
       };
       scrollElement.addEventListener("scroll", handleScroll);
       return () => scrollElement.removeEventListener("scroll", handleScroll);
@@ -109,12 +108,16 @@ const useChatWindow = () => {
   useEffect(() => {
     if (!messages.length || !scrollAreaRef.current) return;
 
+    const scrollElement = getScrollElement(scrollAreaRef);
     const lastMessage = messages[messages.length - 1];
     const isLastMessageFromUser = lastMessage.sender === user.uid;
 
     if (!isLastMessageFromUser) {
+      const isNearBottom = scrollElement && 
+        (scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight < 100); // Within 100px of bottom
+      
       if (
-        !checkIsAtBottom(scrollAreaRef) &&
+        !isNearBottom && // Only increment if not near bottom
         messages.length !== lastMessageCountRef.current
       ) {
         setNewMessagesCount((prev) => prev + 1);
