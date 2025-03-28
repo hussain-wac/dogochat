@@ -59,7 +59,6 @@ export const fetchChatId = async (db, user, username, setActiveChat) => {
 
     const chat = chatList.find((c) => c.name === username);
     if (chat) {
-      console.log("Found chat:", chat);
       setActiveChat(chat.refid);
     } else {
       console.log("No chat found for username:", username);

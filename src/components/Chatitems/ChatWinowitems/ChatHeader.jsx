@@ -10,7 +10,6 @@ const ChatHeader = ({ chatdet, username }) => {
   };
 
 
-  console.log(chatdet)
   return (
     <CardHeader className="border-b dark:border-neutral-700 flex flex-row items-center space-x-3 h-16 min-h-[4rem] sticky top-0 z-10 bg-white dark:bg-neutral-900">
       {chatdet.profilePic ? (
