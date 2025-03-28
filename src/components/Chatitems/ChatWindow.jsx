@@ -91,6 +91,7 @@ function ChatWindow() {
                       {dayMessages.map((msg) => (
                         <div
                           key={msg.id}
+                          data-message-id={msg.id} // Added data-message-id attribute
                           className={`flex flex-col ${
                             msg.sender === user.uid
                               ? "items-end"
