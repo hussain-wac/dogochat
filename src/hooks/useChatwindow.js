@@ -26,7 +26,7 @@ const useChatWindow = () => {
   const lastMessageCountRef = useRef(0);
   const observerRef = useRef(null);
   const [isOpponentOnline, setIsOpponentOnline] = useState(false);
-  const [lastOnline, setLastOnline] = useState(null); // Add lastOnline
+  const [lastOnline, setLastOnline] = useState(null);
 
   const { data, error, isLoading } = useSWR(
     activeChat ? ["messages", activeChat] : null,
@@ -47,19 +47,20 @@ const useChatWindow = () => {
       return;
     }
 
-    console.log(`Setting up presence listener for: ${username}`);
-    const presenceRef = ref(realtimeDb, `presence/${username}`);
+    const lowercaseUsername = username.toLowerCase(); // Convert to lowercase
+    console.log(`Setting up presence listener for: ${lowercaseUsername}`);
+    const presenceRef = ref(realtimeDb, `presence/${lowercaseUsername}`);
 
     const handlePresenceChange = (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
         const isOnline = data?.online || false;
         const lastOnlineTimestamp = data?.lastOnline || null;
-        console.log(`${username} is ${isOnline ? "online" : "offline"}`);
+        console.log(`${lowercaseUsername} is ${isOnline ? "online" : "offline"}`);
         setIsOpponentOnline(isOnline);
         setLastOnline(lastOnlineTimestamp);
       } else {
-        console.log(`No presence data found for ${username}`);
+        console.log(`No presence data found for ${lowercaseUsername}`);
         setIsOpponentOnline(false);
         setLastOnline(null);
       }
@@ -70,7 +71,7 @@ const useChatWindow = () => {
     });
 
     return () => {
-      console.log(`Cleaning up presence listener for ${username}`);
+      console.log(`Cleaning up presence listener for ${lowercaseUsername}`);
       unsubscribe();
     };
   }, [username, user]);
