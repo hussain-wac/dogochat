@@ -47,7 +47,7 @@ const useChatWindow = () => {
       return;
     }
 
-    const lowercaseUsername = username.toLowerCase(); // Convert to lowercase
+    const lowercaseUsername = username.toLowerCase(); 
     console.log(`Setting up presence listener for: ${lowercaseUsername}`);
     const presenceRef = ref(realtimeDb, `presence/${lowercaseUsername}`);
 

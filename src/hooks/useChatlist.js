@@ -16,10 +16,8 @@ const fetchChatList = (uid) => {
       (docSnap) => {
         if (docSnap.exists()) {
           const rawChatList = docSnap.data().chatlist || [];
-          // Filter duplicates based on refid, keeping the first occurrence
           const uniqueChatList = rawChatList.reduce((acc, chat) => {
             if (!acc.some((item) => item.refid === chat.refid)) {
-              // Ensure name is lowercase for consistency
               acc.push({ ...chat, name: chat.name.toLowerCase() });
             }
             return acc;
@@ -57,7 +55,7 @@ const useChatList = () => {
         chatlist: chatList.filter((chat) => chat.refid !== chatRefId),
       });
 
-      mutate(); // Revalidate the chat list
+      mutate(); 
     } catch (error) {
       console.error("Error deleting chat:", error);
     }

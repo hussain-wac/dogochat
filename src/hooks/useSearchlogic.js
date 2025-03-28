@@ -17,6 +17,7 @@ const useSearchlogic = ({ setActiveChat }) => {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
+      // Add logic here if needed for Enter key press
     }
   };
 
@@ -57,6 +58,7 @@ const useSearchlogic = ({ setActiveChat }) => {
           name: currentUsername,
           type: "private",
           refid: chatId,
+          profilePic: user.photoURL, 
         }),
       });
 
@@ -86,4 +88,5 @@ const useSearchlogic = ({ setActiveChat }) => {
     handleKeyDown,
   };
 };
+
 export default useSearchlogic;
