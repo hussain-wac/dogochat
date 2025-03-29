@@ -20,6 +20,7 @@ import { Navigate } from "react-router-dom";
 function Navbar() {
   const [user, setUser] = useAtom(globalState);
   const { setTheme } = useTheme();
+  console.log(user.displayName)
 
   const handleLogout = () => {
     <Navigate to="/" replace />;
@@ -33,7 +34,7 @@ function Navbar() {
           <img
             src="/dogo.svg"
             alt="Dogochat Logo"
-            className="w-11 h-11" // Adjust the size of the logo
+            className="w-11 h-11" 
           />
           <span className="font-bold text-xl md:text-2xl">
             Dogo<span className="text-orange-300">chat</span>
@@ -56,15 +57,15 @@ function Navbar() {
                     <>
                       <div className="flex flex-col items-center p-4">
                         <Avatar className="h-16 w-16 mb-2">
-                          {user.picture ? (
-                            <AvatarImage src={user.photoURL} alt={user.name} />
+                          {user.photoURL ? (
+                            <AvatarImage src={user.photoURL} alt={user.displayName} />
                           ) : (
                             <AvatarFallback>
                               <User className="h-8 w-8" />
                             </AvatarFallback>
                           )}
                         </Avatar>
-                        <h3 className="font-medium text-lg">{user.name}</h3>
+                        <h3 className="font-medium text-lg">{user.displayName}</h3>
                         <p className="text-sm text-muted-foreground">
                           {user.email}
                         </p>
@@ -98,15 +99,15 @@ function Navbar() {
                     className="flex items-center gap-2 p-1 px-2 h-auto"
                   >
                     <Avatar className="h-8 w-8">
-                      {user.picture ? (
-                        <AvatarImage src={user.picture} alt={user.name} />
+                      {user.photoURL ? (
+                        <AvatarImage src={user.photoURL} alt={user.displayName} />
                       ) : (
                         <AvatarFallback>
                           <User className="h-4 w-4" />
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <span className="font-medium">{user.name}</span>
+                    <span className="font-medium">{user.displayName}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
