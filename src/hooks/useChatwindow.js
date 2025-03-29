@@ -61,12 +61,10 @@ const useChatWindow = (initialUsername) => {
     if (!activeChat) return;
 
     const unsubscribe = fetchMessages(db, activeChat, (msgs) => {
-      console.log(`Messages updated for activeChat: ${activeChat}`, msgs);
       setMessages(msgs);
     });
 
     return () => {
-      console.log(`Unsubscribing listener for chatId: ${activeChat}`);
       unsubscribe();
     };
   }, [activeChat]);
@@ -157,7 +155,6 @@ const useChatWindow = (initialUsername) => {
     const lastMessage = messages[messages.length - 1];
     const isLastMessageFromUser = lastMessage?.sender === user.uid;
 
-    console.log(`New message check - activeChat: ${activeChat}, messages length: ${messages.length}, last sender: ${lastMessage?.sender}`);
 
     if (isLastMessageFromUser) {
       setTimeout(() => scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, "smooth"), 100);

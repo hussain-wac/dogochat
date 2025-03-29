@@ -36,7 +36,6 @@ function ChatList({ setActiveChat }) {
   const [chatToDelete, setChatToDelete] = useState(null);
   const navigate = useNavigate();
 
-  console.log("ChatList data:", chatList); // Debug: Check unreadCount values
 
   const confirmDelete = (refid) => {
     setChatToDelete(refid);

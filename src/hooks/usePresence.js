@@ -9,7 +9,11 @@ const usePresence = () => {
   const user = useAtomValue(globalState);
 
   useEffect(() => {
-  
+    // Guard clause: Exit if user is null or doesn't have a displayName
+    if (!user || !user.displayName) {
+      console.log("User not available yet, skipping presence setup.");
+      return;
+    }
 
     const username = user.displayName.toLowerCase();
     const presenceRef = ref(realtimeDb, `presence/${username}`);
@@ -18,7 +22,6 @@ const usePresence = () => {
     // Initial connection check
     const unsubscribeConnected = onValue(connectedRef, (snapshot) => {
       if (snapshot.val() === true) {
-        console.log(`User ${username} connected`);
         set(presenceRef, {
           online: true,
           lastOnline: null,
@@ -49,7 +52,10 @@ const usePresence = () => {
         }).catch((err) => console.error(`Failed to set offline: ${err.message}`));
       }
     };
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Cleanup function
     return () => {
       unsubscribeConnected();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -59,7 +65,10 @@ const usePresence = () => {
         lastOnline: Date.now(),
       }).catch((err) => console.error(`Cleanup failed: ${err.message}`));
     };
-  }, [user]);
+  }, [user]); // Dependency on `user`
+
+  // Optionally return something if needed by the component
+  return null;
 };
 
 export default usePresence;

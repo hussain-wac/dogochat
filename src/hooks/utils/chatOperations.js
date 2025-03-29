@@ -63,7 +63,6 @@ export const fetchChatId = async (db, user, username, setActiveChat) => {
     }
 
     const chatList = userDoc.data().chatlist || [];
-    console.log("Chat list:", chatList);
 
     const chat = chatList.find((c) => c.name === username);
     if (chat) {

@@ -12,7 +12,6 @@ export const fetchMessages = (db, chatId, setMessages) => {
       ...doc.data(),
       timestamp: doc.data().timestamp.toDate(),
     }));
-    console.log(`Fetched messages for chatId: ${chatId}`, fetchedMessages);
     setMessages(fetchedMessages);
   }, (error) => {
     console.error(`Error fetching messages for chatId: ${chatId}`, error);
