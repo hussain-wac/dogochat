@@ -48,7 +48,6 @@ const Login = () => {
         online: true,
         lastOnline: null,
       });
-      console.log(`Initialized presence for ${username} on login`);
 
       setUser({
         uid: user.uid,
