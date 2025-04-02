@@ -1,3 +1,4 @@
+// ChatList.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { MessageCircleIcon, MoreVertical, Trash } from "lucide-react";
+import { MessageCircleIcon, MoreVertical, Trash, Search, UserPlus } from "lucide-react";
 import useChatList from "../../hooks/useChatlist";
 import { useSetAtom } from "jotai";
 import { chatdetails } from "../../jotai/globalState";
@@ -36,40 +37,58 @@ function ChatList({ setActiveChat }) {
   const [chatToDelete, setChatToDelete] = useState(null);
   const navigate = useNavigate();
 
-
-  const confirmDelete = (refid) => {
+  const confirmDelete = (refid, e) => {
+    e.stopPropagation();
     setChatToDelete(refid);
     setOpen(true);
   };
 
   const handleChatSelect = (refid, name, profilePic) => {
-    setActiveChat(refid, name); // Set active chat and username
+    setActiveChat(refid, name);
     setChatdet({ chatname: name, profilePic });
-    navigate(`/home/${name}`); // Navigate to the chat route
+    navigate(`/home/${name}`);
   };
 
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "";
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const now = new Date();
+    const messageDate = new Date(timestamp);
+    
+    if (messageDate.toDateString() === now.toDateString()) {
+      return messageDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+    
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    if (messageDate.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    }
+    
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(now.getDate() - 7);
+    if (messageDate > oneWeekAgo) {
+      return messageDate.toLocaleDateString([], { weekday: 'short' });
+    }
+    
+    return messageDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
+
+  const getInitials = (name) => {
+    if (!name) return "?";
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <Card className="rounded-none border-none shadow-none flex flex-col h-full">
-        <CardHeader className="border-b dark:border-gray-700 shrink-0">
-          <CardTitle className="flex items-center">
-            <MessageCircleIcon className="mr-2 h-5 w-5" />
-            Chats
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 flex-1 overflow-hidden">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+      <Card className="flex flex-col h-full border-none shadow-none">
+
+        <CardContent className="p-0 flex-1 min-h-0">
           <ScrollArea className="h-full">
             {isLoading ? (
               <div className="space-y-4 p-4">
                 {[...Array(5)].map((_, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <Skeleton className="w-10 h-10 rounded-full" />
+                  <div key={index} className="flex items-center space-x-3 p-2">
+                    <Skeleton className="w-12 h-12 rounded-full" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-3 w-1/2" />
@@ -78,71 +97,63 @@ function ChatList({ setActiveChat }) {
                 ))}
               </div>
             ) : chatList.length > 0 ? (
-              <div className="divide-y dark:divide-gray-700">
+              <div className="divide-y dark:divide-gray-800">
                 {chatList.map((chat) => (
                   <TooltipProvider key={chat.refid}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
-                          onClick={() =>
-                            handleChatSelect(chat.refid, chat.name, chat.profilePic)
-                          }
-                          className="
-                            p-4 
-                            hover:bg-gray-100 
-                            dark:hover:bg-gray-800 
-                            cursor-pointer 
-                            flex 
-                            items-center 
-                            space-x-3 
-                            transition-colors
-                          "
+                          onClick={() => handleChatSelect(chat.refid, chat.name, chat.profilePic)}
+                          className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center space-x-3 transition-colors"
                         >
-                          {chat.profilePic ? (
-                            <img
-                              src={chat.profilePic}
-                              alt={chat.name}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                              <MessageCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
-                            </div>
-                          )}
-
-                          <div className="flex-1 overflow-hidden">
+                          <div className="relative flex-shrink-0">
+                            {chat.profilePic ? (
+                              <img
+                                src={chat.profilePic}
+                                alt={chat.name}
+                                className="w-12 h-12 rounded-full object-cover border-2 border-orange-200 dark:border-orange-800 shadow-sm"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-sm text-white font-medium">
+                                {getInitials(chat.name)}
+                              </div>
+                            )}
+                            {chat.isOnline && (
+                              <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white dark:border-gray-900" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <div className="font-semibold truncate">
+                              <div className="font-semibold text-gray-900 dark:text-gray-100 truncate">
                                 {chat.name}
                               </div>
                               {chat.lastMessage && (
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 ml-2 whitespace-nowrap">
                                   {formatTimestamp(chat.lastMessage.timestamp)}
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center justify-between">
-                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            <div className="flex items-center justify-between mt-1">
+                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate pr-2">
                                 {chat.lastMessage?.text || "No messages yet"}
                               </p>
                               {chat.unreadCount > 0 && (
-                                <Badge variant="destructive" className="ml-2">
+                                <Badge className="ml-2 bg-orange-500 hover:bg-orange-500 rounded-full h-5 min-w-5 flex items-center justify-center px-1.5 text-xs">
                                   {chat.unreadCount}
                                 </Badge>
                               )}
                             </div>
                           </div>
-
                           <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="p-2">
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                              <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0">
                                 <MoreVertical className="w-5 h-5 text-gray-500" />
                               </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="w-40 shadow-lg border border-gray-200 dark:border-gray-700">
                               <DropdownMenuItem
-                                className="text-red-500 flex items-center"
-                                onClick={() => confirmDelete(chat.refid)}
+                                className="text-red-500 hover:text-red-600 dark:hover:text-red-400 flex items-center cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                onClick={(e) => confirmDelete(chat.refid, e)}
                               >
                                 <Trash className="w-4 h-4 mr-2" />
                                 Delete Chat
@@ -151,16 +162,26 @@ function ChatList({ setActiveChat }) {
                           </DropdownMenu>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        Start chatting with {chat.name}
+                      <TooltipContent side="right" className="bg-gray-800 text-white border-none px-2 py-1 text-sm shadow-md">
+                        Chat with {chat.name}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 ))}
               </div>
             ) : (
-              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                No chats available
+              <div className="p-8 flex flex-col items-center justify-center h-full text-center">
+                <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mb-4">
+                  <MessageCircleIcon className="h-8 w-8 text-orange-500" />
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-2 font-medium">No chats yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                  Start a new conversation by searching for users
+                </p>
+                <Button className="mt-4 bg-orange-500 hover:bg-orange-600 text-white rounded-full px-4 py-2">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  New Chat
+                </Button>
               </div>
             )}
           </ScrollArea>
@@ -168,24 +189,27 @@ function ChatList({ setActiveChat }) {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
           <DialogHeader>
-            <DialogTitle>Delete Chat?</DialogTitle>
-            <p className="text-gray-500">This action cannot be undone.</p>
+            <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">Delete Chat?</DialogTitle>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">This will permanently delete all messages in this chat.</p>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
+          <DialogFooter className="mt-6 flex gap-2 sm:gap-0 sm:justify-end">
+            <Button 
+              variant="outline" 
+              onClick={() => setOpen(false)}
+              className="w-full sm:w-auto border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={() => {
-                if (chatToDelete) {
-                  deleteChat(chatToDelete);
-                }
+                if (chatToDelete) deleteChat(chatToDelete);
                 setOpen(false);
                 navigate("/home");
               }}
+              className="w-full sm:w-auto bg-red-500 hover:bg-red-600"
             >
               Delete
             </Button>

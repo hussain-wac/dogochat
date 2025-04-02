@@ -1,3 +1,4 @@
+// ChatMessages.jsx
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,86 +15,110 @@ const ChatMessages = ({
   handleDeleteMessages,
   isSelectionMode = false,
 }) => (
-  <div className="flex flex-col h-full">
-    <ScrollArea ref={scrollAreaRef} className="flex-1 p-4 overflow-auto relative">
-      <div className="space-y-3 pb-4">
+  <div className="flex flex-col flex-1 min-h-0">
+    <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-2">
+      <div className="space-y-4 pb-6">
         {isLoading ? (
           [...Array(5)].map((_, index) => (
-            <Skeleton key={index} className="h-10 w-3/4" />
+            <div key={index} className={`flex ${index % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}>
+              <div className="flex flex-col max-w-[70%]">
+                <Skeleton className={`h-12 ${index % 2 === 0 ? "w-64" : "w-48"} rounded-xl`} />
+                <Skeleton className="h-3 w-16 mt-1 ml-auto" />
+              </div>
+            </div>
           ))
         ) : (
           Object.entries(groupedMessages).map(([date, dayMessages]) => (
-            <div key={date}>
-              <div className="text-center text-gray-500 my-4 relative">
-                <span className="bg-white dark:bg-gray-900 px-4 relative z-10">
+            <div key={date} className="space-y-3">
+              <div className="text-center my-4 relative">
+                <span className="bg-white dark:bg-gray-900 px-3 py-1 rounded-full text-xs font-medium text-gray-500 uppercase tracking-wide shadow-sm">
                   {date === new Date().toDateString()
                     ? "Today"
-                    : new Date(date).toLocaleDateString()}
+                    : date === new Date(Date.now() - 86400000).toDateString()
+                    ? "Yesterday"
+                    : new Date(date).toLocaleDateString(undefined, {
+                        weekday: 'long',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
                 </span>
-                <div className="absolute left-0 right-0 top-1/2 border-t dark:border-neutral-700"></div>
+                <div className="absolute left-0 right-0 top-1/2 border-t border-gray-200 dark:border-neutral-700 -z-10" />
               </div>
-              {dayMessages.map((msg) => (
-                <div
-                  key={msg.id}
-                  data-message-id={msg.id}
-                  className={`flex ${msg.sender === user.uid ? "justify-end" : "justify-start"} mb-2`}
-                >
-                  {isSelectionMode && msg.sender === user.uid && (
-                    <input
-                      type="checkbox"
-                      checked={selectedMessages.includes(msg.id)}
-                      onChange={() => toggleMessageSelection(msg.id)}
-                      className="mr-2 self-center"
-                    />
-                  )}
-                  <div className="flex flex-col max-w-[70%]">
-                    <div
-                      className={`p-3 rounded-xl min-w-0 break-words ${
-                        msg.sender === user.uid
-                          ? "bg-orange-100 dark:bg-orange-900/50 text-orange-900 dark:text-orange-100"
-                          : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                      } ${selectedMessages.includes(msg.id) ? "opacity-50" : ""}`}
-                    >
-                      {msg.text}
-                    </div>
-                    <div className="text-xs text-gray-500 flex items-center space-x-1 mt-1">
-                      <span>{formatMessageTime(msg.timestamp)}</span>
-                      {msg.sender === user.uid && (
-                        <>
-                          {msg.status === "read" ? (
-                            <div className="flex space-x-0.5">
-                              <CheckIcon className="h-4 w-4 text-orange-500" />
-                              <CheckIcon className="h-4 w-4 text-orange-500 -ml-2.5" />
-                            </div>
-                          ) : msg.status === "delivered" ? (
-                            <div className="flex space-x-0.5">
-                              <CheckIcon className="h-4 w-4 text-gray-500" />
-                              <CheckIcon className="h-4 w-4 text-gray-500 -ml-2.5" />
-                            </div>
-                          ) : (
-                            <CheckIcon className="h-4 w-4 text-gray-300" />
-                          )}
-                        </>
-                      )}
+              {dayMessages.map((msg) => {
+                const isSender = msg.sender === user.uid;
+                return (
+                  <div
+                    key={msg.id}
+                    data-message-id={msg.id}
+                    className={`flex ${isSender ? "justify-end" : "justify-start"} mb-3 group`}
+                  >
+                    {isSelectionMode && isSender && (
+                      <div className="self-end mr-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedMessages.includes(msg.id)}
+                          onChange={() => toggleMessageSelection(msg.id)}
+                          className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                        />
+                      </div>
+                    )}
+                    <div className={`flex flex-col max-w-[70%] ${selectedMessages.includes(msg.id) ? "opacity-60" : ""}`}>
+                      <div
+                        className={`
+                          p-3 rounded-2xl shadow-sm
+                          ${isSender
+                            ? "bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-tr-none"
+                            : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-none border border-gray-200 dark:border-gray-700"}
+                        `}
+                      >
+                        <div className="text-sm whitespace-pre-wrap break-words">{msg.text}</div>
+                      </div>
+                      <div className={`text-xs text-gray-500 flex items-center space-x-1 mt-1 ${isSender ? "justify-end" : "justify-start"}`}>
+                        <span>{formatMessageTime(msg.timestamp)}</span>
+                        {isSender && (
+                          <>
+                            {msg.status === "read" ? (
+                              <div className="flex space-x-0.5">
+                                <CheckIcon className="h-3.5 w-3.5 text-orange-200" />
+                                <CheckIcon className="h-3.5 w-3.5 text-orange-200 -ml-2" />
+                              </div>
+                            ) : msg.status === "delivered" ? (
+                              <div className="flex space-x-0.5">
+                                <CheckIcon className="h-3.5 w-3.5 text-gray-400" />
+                                <CheckIcon className="h-3.5 w-3.5 text-gray-400 -ml-2" />
+                              </div>
+                            ) : (
+                              <CheckIcon className="h-3.5 w-3.5 text-gray-300" />
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ))
         )}
       </div>
     </ScrollArea>
     {selectedMessages.length > 0 && (
-      <div className="p-2 bg-gray-100 dark:bg-neutral-800 flex justify-between items-center">
-        <span>{selectedMessages.length} selected</span>
-        <button
-          onClick={handleDeleteMessages}
-          className="text-red-500 flex items-center space-x-1"
-        >
-          <Trash2Icon className="h-5 w-5" />
-          <span>Delete</span>
-        </button>
+      <div className="sticky bottom-0 p-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-md">
+        <div className="flex items-center justify-between max-w-3xl mx-auto">
+          <span className="font-medium text-gray-700 dark:text-gray-300">
+            <span className="inline-flex items-center justify-center mr-2 w-6 h-6 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-bold rounded-full">
+              {selectedMessages.length}
+            </span>
+            messages selected
+          </span>
+          <button
+            onClick={handleDeleteMessages}
+            className="text-red-500 flex items-center space-x-2 px-4 py-1.5 bg-red-50 dark:bg-red-900/20 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+          >
+            <Trash2Icon className="h-4 w-4" />
+            <span className="font-medium">Delete</span>
+          </button>
+        </div>
       </div>
     )}
   </div>
