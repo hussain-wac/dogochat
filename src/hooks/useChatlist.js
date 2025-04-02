@@ -21,7 +21,7 @@ const fetchChatList = (uid, mutate) => {
   let unsubscribeUser = null;
   const chatListeners = new Map();
   let currentChatList = [];
-  let previousMessageIds = new Set(); // Track previous messages to detect new ones
+  let previousMessageIds = new Set(); 
 
   const updateChatList = (newChatList) => {
     newChatList.sort((a, b) => {
@@ -79,14 +79,13 @@ const fetchChatList = (uid, mutate) => {
                 timestamp: lastMessageDoc.data().timestamp.toDate(),
               };
               
-              // Check if this is a new message
               if (!previousMessageIds.has(messageId) && 
-                  lastMessageDoc.data().sender !== uid && // Don't notify for user's own messages
+                  lastMessageDoc.data().sender !== uid && 
                   "Notification" in window && 
                   Notification.permission === "granted") {
                 new Notification(`New message from ${chat.name}`, {
                   body: messageData.text,
-                  icon: "/path/to/icon.png", // Optional: add an icon
+                  icon: "/dogo.svg", 
                   timestamp: messageData.timestamp,
                 });
                 previousMessageIds.add(messageId);
