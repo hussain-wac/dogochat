@@ -21,7 +21,7 @@ const fetchChatList = (uid, mutate) => {
   let unsubscribeUser = null;
   const chatListeners = new Map();
   let currentChatList = [];
-  let previousMessageIds = new Set(); // Track previous messages to detect new ones
+  let previousMessageIds = new Set(); 
 
   const updateChatList = (newChatList) => {
     newChatList.sort((a, b) => {
