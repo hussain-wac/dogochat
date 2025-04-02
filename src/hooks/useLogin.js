@@ -11,7 +11,6 @@ const useLogin = () => {
   const [loading, setLoading] = useState(false);
   const googleProvider = new GoogleAuthProvider();
   const setUser = useSetAtom(globalState);
-
   const handleGoogleSignIn = async () => {
     setError("");
     setLoading(true);
@@ -20,9 +19,7 @@ const useLogin = () => {
       const user = result.user;
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
-
       const username = user.displayName.toLowerCase();
-
       if (!userDocSnap.exists()) {
         await setDoc(userDocRef, {
           uid: user.uid,

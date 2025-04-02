@@ -116,7 +116,7 @@ const ChatMessages = ({
             className="text-red-500 flex items-center space-x-2 px-4 py-1.5 bg-red-50 dark:bg-red-900/20 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
           >
             <Trash2Icon className="h-4 w-4" />
-            <span className="font-medium">Delete</span>
+            <span className="font-medium">Unsend</span>
           </button>
         </div>
       </div>

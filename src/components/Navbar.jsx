@@ -22,7 +22,7 @@ function Navbar() {
   const { setTheme, theme } = useTheme();
 
   const handleLogout = () => {
-    <Navigate to="/" replace />;
+    <Navigate to="/" replace = "/"/>;
     setUser(null);
   };
 
