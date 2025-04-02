@@ -214,7 +214,7 @@ const useChatWindow = (initialUsername) => {
     toggleMessageSelection,
     handleDeleteMessages,
     isSelectionMode, // Expose selection mode
-    toggleSelectionMode, // Expose toggle function
+    toggleSelectionMode, 
   };
 };
 
