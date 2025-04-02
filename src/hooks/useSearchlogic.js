@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { db } from "../firebase";
 import { useSWRConfig } from "swr";
 import { chatdetails, globalState } from "../jotai/globalState";
@@ -11,13 +11,50 @@ const useSearchlogic = ({ setActiveChat }) => {
   const user = useAtomValue(globalState);
   const { mutate } = useSWRConfig();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const setdet = useSetAtom(chatdetails);
-  const { users, isLoading } = useSearchUsers(search);
+  const { users, isLoading } = useSearchUsers(debouncedSearch);
   const navigate = useNavigate();
+  const timeoutRef = useRef(null);
+
+  // Simple debounce function
+  const debounce = (func, delay) => {
+    return (...args) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
+  };
+
+  // Debounced search handler
+  const debouncedSearchHandler = debounce((searchValue) => {
+    setDebouncedSearch(searchValue);
+  }, 300);
+
+  // Handle search input change
+  const handleSearchChange = (value) => {
+    setSearch(value);
+    // Only trigger search if value is empty or >= 3 characters
+    if (value.length === 0 || value.length >= 3) {
+      debouncedSearchHandler(value);
+    } else {
+      // Clear debounced search if less than 3 characters
+      debouncedSearchHandler("");
+    }
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      // Add logic here if needed for Enter key press
+      // Immediately trigger search if >= 3 characters
+      if (search.length >= 3) {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        setDebouncedSearch(search);
+      }
     }
   };
 
@@ -58,7 +95,7 @@ const useSearchlogic = ({ setActiveChat }) => {
           name: currentUsername,
           type: "private",
           refid: chatId,
-          profilePic: user.photoURL, 
+          profilePic: user.photoURL,
         }),
       });
 
@@ -73,6 +110,7 @@ const useSearchlogic = ({ setActiveChat }) => {
       navigate(`/home/${selectedUsername}`);
 
       setSearch("");
+      setDebouncedSearch("");
     } catch (error) {
       console.error("Error starting chat:", error);
     }
@@ -82,7 +120,7 @@ const useSearchlogic = ({ setActiveChat }) => {
     users,
     isLoading,
     setdet,
-    setSearch,
+    setSearch: handleSearchChange,
     startChat,
     search,
     handleKeyDown,
