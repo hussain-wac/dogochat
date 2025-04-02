@@ -20,7 +20,8 @@ import { motion, AnimatePresence } from "framer-motion";
 function Home() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [showSidebar, setShowSidebar] = useState(!isMobile);
+  // Show sidebar by default on mobile when no chat is selected
+  const [showSidebar, setShowSidebar] = useState(true); 
   const navigate = useNavigate();
   const { username: initialUsername } = useParams();
   const [selectedUsername, setSelectedUsername] = useState(initialUsername);
@@ -38,8 +39,11 @@ function Home() {
 
   useEffect(() => {
     setSelectedUsername(initialUsername);
+    // Only hide sidebar on mobile when a chat is selected
     if (initialUsername && isMobile) {
       setShowSidebar(false);
+    } else if (!initialUsername && isMobile) {
+      setShowSidebar(true); // Show chat list by default on mobile
     }
   }, [initialUsername, isMobile]);
 
@@ -116,30 +120,15 @@ function Home() {
           </AnimatePresence>
           
           <div className="h-full">
-            {selectedUsername ? (
+            {selectedUsername && !showSidebar ? (
               <ChatWindow 
                 initialUsername={selectedUsername} 
                 onBackClick={toggleSidebar}
               />
-            ) : (
-              <div className="flex flex-col items-center justify-center text-neutral-500 h-full space-y-4 p-8">
-                <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-2">
-                  <MessageCircleIcon className="h-8 w-8 text-orange-500" />
-                </div>
-                <p className="text-lg font-medium text-center">
-                  Select a chat to start messaging
-                </p>
-                <Button 
-                  onClick={toggleSidebar}
-                  className="mt-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full px-4"
-                >
-                  View Chats
-                </Button>
-              </div>
-            )}
+            ) : null}
           </div>
           
-          {!showSidebar && !selectedUsername && (
+          {selectedUsername && !showSidebar && (
             <div className="absolute right-4 bottom-4 z-20">
               <motion.div
                 variants={buttonVariants}
@@ -162,6 +151,7 @@ function Home() {
     );
   }
 
+  // Desktop view remains unchanged
   return (
     <div className="h-full flex bg-neutral-50 dark:bg-neutral-900">
       <ResizablePanelGroup direction="horizontal" className="flex-1">
