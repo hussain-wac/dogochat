@@ -3,6 +3,16 @@ import { useAtomValue } from "jotai";
 import { globalState } from "../jotai/globalState";
 import { doc, onSnapshot, updateDoc, collection, query, orderBy, limit } from "firebase/firestore";
 import { db } from "../firebase";
+import { useEffect } from "react";
+
+// Request notification permission
+const requestNotificationPermission = async () => {
+  if ("Notification" in window) {
+    const permission = await Notification.requestPermission();
+    return permission === "granted";
+  }
+  return false;
+};
 
 const fetchChatList = (uid, mutate) => {
   if (!uid) throw new Error("No user ID");
@@ -11,6 +21,7 @@ const fetchChatList = (uid, mutate) => {
   let unsubscribeUser = null;
   const chatListeners = new Map();
   let currentChatList = [];
+  let previousMessageIds = new Set(); // Track previous messages to detect new ones
 
   const updateChatList = (newChatList) => {
     newChatList.sort((a, b) => {
@@ -60,12 +71,29 @@ const fetchChatList = (uid, mutate) => {
 
             const lastMessageDoc = snapshot.docs
               .sort((a, b) => b.data().timestamp.toDate() - a.data().timestamp.toDate())[0];
-            chatData.lastMessage = lastMessageDoc
-              ? {
-                  text: lastMessageDoc.data().text,
-                  timestamp: lastMessageDoc.data().timestamp.toDate(),
-                }
-              : null;
+            
+            if (lastMessageDoc) {
+              const messageId = lastMessageDoc.id;
+              const messageData = {
+                text: lastMessageDoc.data().text,
+                timestamp: lastMessageDoc.data().timestamp.toDate(),
+              };
+              
+              // Check if this is a new message
+              if (!previousMessageIds.has(messageId) && 
+                  lastMessageDoc.data().sender !== uid && // Don't notify for user's own messages
+                  "Notification" in window && 
+                  Notification.permission === "granted") {
+                new Notification(`New message from ${chat.name}`, {
+                  body: messageData.text,
+                  icon: "/path/to/icon.png", // Optional: add an icon
+                  timestamp: messageData.timestamp,
+                });
+                previousMessageIds.add(messageId);
+              }
+              
+              chatData.lastMessage = messageData;
+            }
 
             updateChatList(currentChatList.map((c) =>
               c.refid === chat.refid ? { ...chatData } : c
@@ -105,6 +133,12 @@ const useChatList = () => {
       refreshInterval: 0,
     }
   );
+
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission !== "denied") {
+      requestNotificationPermission();
+    }
+  }, []);
 
   const deleteChat = async (chatRefId) => {
     if (!user?.uid) return;
