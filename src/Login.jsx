@@ -11,13 +11,12 @@ const Login = () => {
   if (user) {
     return <Navigate to="/home" />;
   }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 dark:border-gray-700">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 dark:from-neutral-900 dark:to-neutral-800 flex items-center justify-center px-4">
+      <div className="bg-white dark:bg-neutral-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-neutral-100 dark:border-neutral-700">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-orange-500 dark:text-orange-400 mb-2">DogoChat</h1>
-          <p className="text-gray-500 dark:text-gray-400">Connect and chat with  everywhere</p>
+          <p className="text-neutral-500 dark:text-neutral-400">Connect and chat with  everyone</p>
         </div>
 
         {error && (
@@ -41,8 +40,8 @@ const Login = () => {
             disabled={loading}
             className={`flex items-center justify-center w-full py-3 px-4 rounded-lg transition duration-300 ${
               loading 
-                ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed" 
-                : "bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 shadow-sm hover:shadow"
+                ? "bg-neutral-100 dark:bg-neutral-700 cursor-not-allowed" 
+                : "bg-white dark:bg-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-600 border border-neutral-300 dark:border-neutral-600 shadow-sm hover:shadow"
             }`}
           >
             {!loading ? (
@@ -65,30 +64,30 @@ const Login = () => {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                <span className="text-gray-700 dark:text-gray-200 font-medium">Sign in with Google</span>
+                <span className="text-neutral-700 dark:text-neutral-200 font-medium">Sign in with Google</span>
               </>
             ) : (
               <div className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-neutral-500 dark:text-neutral-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span className="text-gray-500 dark:text-gray-400">Signing in...</span>
+                <span className="text-neutral-500 dark:text-neutral-400">Signing in...</span>
               </div>
             )}
           </button>
         </div>
 
-        <div className="text-center mt-8 text-gray-500 dark:text-gray-400 text-sm">
+        <div className="text-center mt-8 text-neutral-500 dark:text-neutral-400 text-sm">
           By signing in, you agree to our 
           <a href="#" className="text-orange-600 dark:text-orange-400 hover:text-orange-500 dark:hover:text-orange-300 ml-1">Terms of Service</a> and 
           <a href="#" className="text-orange-600 dark:text-orange-400 hover:text-orange-500 dark:hover:text-orange-300 ml-1">Privacy Policy</a>
         </div>
         
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-center space-x-2">
             <img src="/dogo.svg" alt="Doggo logo" className="h-10 w-10 rounded-full" />
-            <span className="text-gray-600 dark:text-gray-300 text-sm">Woof securely with DoggoChat</span>
+            <span className="text-neutral-600 dark:text-neutral-300 text-sm">Woof securely with DoggoChat</span>
           </div>
         </div>
       </div>
