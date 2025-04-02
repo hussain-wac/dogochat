@@ -1,4 +1,3 @@
-// ChatMessages.jsx
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,13 +15,22 @@ const ChatMessages = ({
   isSelectionMode = false,
 }) => (
   <div className="flex flex-col flex-1 min-h-0">
-    <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-2">
+    <ScrollArea
+      ref={scrollAreaRef}
+      className="flex-1 px-4 py-2"
+      style={{ overflowY: "auto" }} // Ensure vertical scrolling is enabled
+    >
       <div className="space-y-4 pb-6">
         {isLoading ? (
           [...Array(5)].map((_, index) => (
-            <div key={index} className={`flex ${index % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}>
+            <div
+              key={index}
+              className={`flex ${index % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}
+            >
               <div className="flex flex-col max-w-[70%]">
-                <Skeleton className={`h-12 ${index % 2 === 0 ? "w-64" : "w-48"} rounded-xl`} />
+                <Skeleton
+                  className={`h-12 ${index % 2 === 0 ? "w-64" : "w-48"} rounded-xl`}
+                />
                 <Skeleton className="h-3 w-16 mt-1 ml-auto" />
               </div>
             </div>
@@ -37,9 +45,9 @@ const ChatMessages = ({
                     : date === new Date(Date.now() - 86400000).toDateString()
                     ? "Yesterday"
                     : new Date(date).toLocaleDateString(undefined, {
-                        weekday: 'long',
-                        month: 'short',
-                        day: 'numeric'
+                        weekday: "long",
+                        month: "short",
+                        day: "numeric",
                       })}
                 </span>
                 <div className="absolute left-0 right-0 top-1/2 border-t border-neutral-200 dark:border-neutral-700 -z-10" />
@@ -62,18 +70,30 @@ const ChatMessages = ({
                         />
                       </div>
                     )}
-                    <div className={`flex flex-col max-w-[70%] ${selectedMessages.includes(msg.id) ? "opacity-60" : ""}`}>
+                    <div
+                      className={`flex flex-col max-w-[70%] ${
+                        selectedMessages.includes(msg.id) ? "opacity-60" : ""
+                      }`}
+                    >
                       <div
                         className={`
                           p-3 rounded-2xl shadow-sm
-                          ${isSender
-                            ? "bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-tr-none"
-                            : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-tl-none border border-neutral-200 dark:border-neutral-700"}
+                          ${
+                            isSender
+                              ? "bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-tr-none"
+                              : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-tl-none border border-neutral-200 dark:border-neutral-700"
+                          }
                         `}
                       >
-                        <div className="text-sm whitespace-pre-wrap break-words">{msg.text}</div>
+                        <div className="text-sm whitespace-pre-wrap break-words">
+                          {msg.text}
+                        </div>
                       </div>
-                      <div className={`text-xs text-neutral-500 flex items-center space-x-1 mt-1 ${isSender ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className={`text-xs text-neutral-500 flex items-center space-x-1 mt-1 ${
+                          isSender ? "justify-end" : "justify-start"
+                        }`}
+                      >
                         <span>{formatMessageTime(msg.timestamp)}</span>
                         {isSender && (
                           <>
