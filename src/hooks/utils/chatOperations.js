@@ -1,4 +1,4 @@
-import { collection, addDoc, doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, arrayUnion, getDoc,deleteDoc  } from "firebase/firestore";
 
 export const sendMessage = async (db, activeChat, newMessage, userId, scrollToBottom) => {
   if (!newMessage.trim() || !activeChat) return;
@@ -72,5 +72,20 @@ export const fetchChatId = async (db, user, username, setActiveChat) => {
     }
   } catch (err) {
     console.error("Error fetching chat ID:", err);
+  }
+};
+
+
+export const deleteMessages = async (db, chatId, messageIds) => {
+  try {
+    await Promise.all(
+      messageIds.map(async (messageId) => {
+        const messageRef = doc(db, "chats", chatId, "messages", messageId);
+        await deleteDoc(messageRef);
+      })
+    );
+    console.log("Messages deleted successfully");
+  } catch (error) {
+    throw new Error("Failed to delete messages: " + error.message);
   }
 };

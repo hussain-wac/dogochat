@@ -1,3 +1,4 @@
+// ChatWindow.jsx
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import useChatWindow from "../../hooks/useChatwindow";
@@ -26,6 +27,11 @@ function ChatWindow({ initialUsername }) {
     user,
     isOpponentOnline,
     lastOnline,
+    selectedMessages,
+    toggleMessageSelection,
+    handleDeleteMessages,
+    isSelectionMode, // Added
+    toggleSelectionMode, // Added
   } = useChatWindow(initialUsername);
 
   if (!username || !activeChat) {
@@ -44,6 +50,8 @@ function ChatWindow({ initialUsername }) {
           username={username}
           isOpponentOnline={isOpponentOnline}
           lastOnline={lastOnline}
+          toggleSelectionMode={toggleSelectionMode} // Pass to ChatHeader
+          isSelectionMode={isSelectionMode} // Pass to ChatHeader
         />
         <CardContent className="flex flex-col flex-1 p-0 overflow-hidden">
           <ChatMessages
@@ -52,6 +60,10 @@ function ChatWindow({ initialUsername }) {
             groupedMessages={groupedMessages}
             user={user}
             formatMessageTime={formatMessageTime}
+            selectedMessages={selectedMessages}
+            toggleMessageSelection={toggleMessageSelection}
+            handleDeleteMessages={handleDeleteMessages}
+            isSelectionMode={isSelectionMode} // Pass to ChatMessages
           />
           <NewMessagesBadge
             newMessagesCount={newMessagesCount}
