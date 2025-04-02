@@ -79,7 +79,7 @@ function ChatList({ setActiveChat }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900">
       <Card className="flex flex-col h-full border-none shadow-none">
 
         <CardContent className="p-0 flex-1 min-h-0">
@@ -97,14 +97,14 @@ function ChatList({ setActiveChat }) {
                 ))}
               </div>
             ) : chatList.length > 0 ? (
-              <div className="divide-y dark:divide-gray-800">
+              <div className="divide-y dark:divide-neutral-800">
                 {chatList.map((chat) => (
                   <TooltipProvider key={chat.refid}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
                           onClick={() => handleChatSelect(chat.refid, chat.name, chat.profilePic)}
-                          className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center space-x-3 transition-colors"
+                          className="p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer flex items-center space-x-3 transition-colors"
                         >
                           <div className="relative flex-shrink-0">
                             {chat.profilePic ? (
@@ -119,22 +119,22 @@ function ChatList({ setActiveChat }) {
                               </div>
                             )}
                             {chat.isOnline && (
-                              <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white dark:border-gray-900" />
+                              <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white dark:border-neutral-900" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <div className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+                              <div className="font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                                 {chat.name}
                               </div>
                               {chat.lastMessage && (
-                                <span className="text-xs text-gray-500 ml-2 whitespace-nowrap">
+                                <span className="text-xs text-neutral-500 ml-2 whitespace-nowrap">
                                   {formatTimestamp(chat.lastMessage.timestamp)}
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center justify-between mt-1">
-                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate pr-2">
+                              <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate pr-2">
                                 {chat.lastMessage?.text || "No messages yet"}
                               </p>
                               {chat.unreadCount > 0 && (
@@ -146,13 +146,13 @@ function ChatList({ setActiveChat }) {
                           </div>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                              <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0">
-                                <MoreVertical className="w-5 h-5 text-gray-500" />
+                              <button className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors flex-shrink-0">
+                                <MoreVertical className="w-5 h-5 text-neutral-500" />
                               </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40 shadow-lg border border-gray-200 dark:border-gray-700">
+                            <DropdownMenuContent align="end" className="w-40 shadow-lg border border-neutral-200 dark:border-neutral-700">
                               <DropdownMenuItem
-                                className="text-red-500 hover:text-red-600 dark:hover:text-red-400 flex items-center cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                className="text-red-500 hover:text-red-600 dark:hover:text-red-400 flex items-center cursor-pointer px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                                 onClick={(e) => confirmDelete(chat.refid, e)}
                               >
                                 <Trash className="w-4 h-4 mr-2" />
@@ -162,7 +162,7 @@ function ChatList({ setActiveChat }) {
                           </DropdownMenu>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent side="right" className="bg-gray-800 text-white border-none px-2 py-1 text-sm shadow-md">
+                      <TooltipContent side="right" className="bg-neutral-800 text-white border-none px-2 py-1 text-sm shadow-md">
                         Chat with {chat.name}
                       </TooltipContent>
                     </Tooltip>
@@ -174,8 +174,8 @@ function ChatList({ setActiveChat }) {
                 <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mb-4">
                   <MessageCircleIcon className="h-8 w-8 text-orange-500" />
                 </div>
-                <p className="text-gray-600 dark:text-gray-300 mb-2 font-medium">No chats yet</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                <p className="text-neutral-600 dark:text-neutral-300 mb-2 font-medium">No chats yet</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-xs">
                   Start a new conversation by searching for users
                 </p>
                 <Button className="mt-4 bg-orange-500 hover:bg-orange-600 text-white rounded-full px-4 py-2">
@@ -189,16 +189,16 @@ function ChatList({ setActiveChat }) {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
+        <DialogContent className="sm:max-w-md bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 shadow-xl rounded-lg">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">Delete Chat?</DialogTitle>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">This will permanently delete all messages in this chat.</p>
+            <DialogTitle className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">Delete Chat?</DialogTitle>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">This will permanently delete all messages in this chat.</p>
           </DialogHeader>
           <DialogFooter className="mt-6 flex gap-2 sm:gap-0 sm:justify-end">
             <Button 
               variant="outline" 
               onClick={() => setOpen(false)}
-              className="w-full sm:w-auto border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="w-full sm:w-auto border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
             >
               Cancel
             </Button>

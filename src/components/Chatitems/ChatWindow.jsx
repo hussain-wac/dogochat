@@ -58,14 +58,14 @@ function ChatWindow({ initialUsername, onBackClick }) {
 
   if (!username || !activeChat) {
     return (
-      <div className="flex flex-col items-center justify-center text-gray-500 h-full space-y-4 p-8 bg-gray-50 dark:bg-gray-900 rounded-lg">
-        <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center animate-pulse">
-          <MessageCircleIcon className="h-8 w-8 text-gray-400 dark:text-gray-600" />
+      <div className="flex flex-col items-center justify-center text-neutral-500 h-full space-y-4 p-8 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
+        <div className="w-16 h-16 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center animate-pulse">
+          <MessageCircleIcon className="h-8 w-8 text-neutral-400 dark:text-neutral-600" />
         </div>
         <p className="text-lg font-medium text-center">
           {username ? "Loading chat..." : "Select a chat to start messaging"}
         </p>
-        <p className="text-sm text-gray-400 text-center max-w-sm">
+        <p className="text-sm text-neutral-400 text-center max-w-sm">
           {username 
             ? "Just a moment while we load your conversation..." 
             : "Choose from your existing chats or search for users to start a new conversation"}
@@ -84,7 +84,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-neutral-100 dark:bg-neutral-neutral">
       <Card className="flex flex-col h-full rounded-none border-none shadow-none overflow-hidden">
         <ChatHeader
           chatdet={chatdet}
@@ -96,7 +96,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
           isMobile={isMobile}
           onBackClick={handleBackToChats}
         />
-        <CardContent className="flex flex-col flex-1 p-0 overflow-hidden bg-gray-50 dark:bg-gray-900 relative">
+        <CardContent className="flex flex-col flex-1 p-0 overflow-hidden bg-neutral-50 dark:bg-neutral-900 relative">
           <ChatMessages
             scrollAreaRef={scrollAreaRef}
             isLoading={isLoading}

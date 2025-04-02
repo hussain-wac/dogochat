@@ -31,7 +31,7 @@ const ChatMessages = ({
           Object.entries(groupedMessages).map(([date, dayMessages]) => (
             <div key={date} className="space-y-3">
               <div className="text-center my-4 relative">
-                <span className="bg-white dark:bg-gray-900 px-3 py-1 rounded-full text-xs font-medium text-gray-500 uppercase tracking-wide shadow-sm">
+                <span className="bg-white dark:bg-neutral-900 px-3 py-1 rounded-full text-xs font-medium text-neutral-500 uppercase tracking-wide shadow-sm">
                   {date === new Date().toDateString()
                     ? "Today"
                     : date === new Date(Date.now() - 86400000).toDateString()
@@ -42,7 +42,7 @@ const ChatMessages = ({
                         day: 'numeric'
                       })}
                 </span>
-                <div className="absolute left-0 right-0 top-1/2 border-t border-gray-200 dark:border-neutral-700 -z-10" />
+                <div className="absolute left-0 right-0 top-1/2 border-t border-neutral-200 dark:border-neutral-700 -z-10" />
               </div>
               {dayMessages.map((msg) => {
                 const isSender = msg.sender === user.uid;
@@ -58,7 +58,7 @@ const ChatMessages = ({
                           type="checkbox"
                           checked={selectedMessages.includes(msg.id)}
                           onChange={() => toggleMessageSelection(msg.id)}
-                          className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                          className="h-4 w-4 rounded border-neutral-300 text-orange-500 focus:ring-orange-500"
                         />
                       </div>
                     )}
@@ -68,12 +68,12 @@ const ChatMessages = ({
                           p-3 rounded-2xl shadow-sm
                           ${isSender
                             ? "bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-tr-none"
-                            : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-none border border-gray-200 dark:border-gray-700"}
+                            : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-tl-none border border-neutral-200 dark:border-neutral-700"}
                         `}
                       >
                         <div className="text-sm whitespace-pre-wrap break-words">{msg.text}</div>
                       </div>
-                      <div className={`text-xs text-gray-500 flex items-center space-x-1 mt-1 ${isSender ? "justify-end" : "justify-start"}`}>
+                      <div className={`text-xs text-neutral-500 flex items-center space-x-1 mt-1 ${isSender ? "justify-end" : "justify-start"}`}>
                         <span>{formatMessageTime(msg.timestamp)}</span>
                         {isSender && (
                           <>
@@ -84,11 +84,11 @@ const ChatMessages = ({
                               </div>
                             ) : msg.status === "delivered" ? (
                               <div className="flex space-x-0.5">
-                                <CheckIcon className="h-3.5 w-3.5 text-gray-400" />
-                                <CheckIcon className="h-3.5 w-3.5 text-gray-400 -ml-2" />
+                                <CheckIcon className="h-3.5 w-3.5 text-neutral-400" />
+                                <CheckIcon className="h-3.5 w-3.5 text-neutral-400 -ml-2" />
                               </div>
                             ) : (
-                              <CheckIcon className="h-3.5 w-3.5 text-gray-300" />
+                              <CheckIcon className="h-3.5 w-3.5 text-neutral-300" />
                             )}
                           </>
                         )}
@@ -103,9 +103,9 @@ const ChatMessages = ({
       </div>
     </ScrollArea>
     {selectedMessages.length > 0 && (
-      <div className="sticky bottom-0 p-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-md">
+      <div className="sticky bottom-0 p-3 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700 shadow-md">
         <div className="flex items-center justify-between max-w-3xl mx-auto">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
+          <span className="font-medium text-neutral-700 dark:text-neutral-300">
             <span className="inline-flex items-center justify-center mr-2 w-6 h-6 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-bold rounded-full">
               {selectedMessages.length}
             </span>
