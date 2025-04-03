@@ -1,7 +1,6 @@
-// useChatWindow.js
 import { useState, useRef, useEffect, useMemo } from "react";
-import {  globalState } from "../jotai/globalState";
-import { useAtomValue } from "jotai";
+import { globalState } from "../jotai/globalState";
+import { useAtom, useAtomValue } from "jotai";
 import { fetchMessages } from "./utils/messageFetch";
 import { formatMessageTime } from "./utils/timeFormat";
 import { markMessageAsRead, fetchChatId } from "./utils/chatOperations";
@@ -9,12 +8,17 @@ import {
   getScrollElement,
   checkIsAtBottom,
   scrollToBottom,
+  smartScroll,
+  saveScrollPosition,
+  scrollPositionsAtom
 } from "./utils/scrollUtils";
 import { observeMessages } from "./utils/intersectionUtils";
 import useMessageHandlers from "./useMessageHandlers";
 import { db } from "../firebase";
+
 const useChatWindow = (initialUsername) => {
   const user = useAtomValue(globalState);
+  const [scrollPositions, setScrollPositions] = useAtom(scrollPositionsAtom);
  
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -27,6 +31,7 @@ const useChatWindow = (initialUsername) => {
   const [newMessagesCount, setNewMessagesCount] = useState(0);
   const [selectedMessages, setSelectedMessages] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const initialScrollDone = useRef(false);
 
   const {
     handleSendMessage,
@@ -48,15 +53,45 @@ const useChatWindow = (initialUsername) => {
     setIsSelectionMode,
     setMessages,
   });
+
+  // Save scroll position when changing chats
+  const handleSetActiveChat = (chatId) => {
+    if (activeChat) {
+      saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
+    }
+    setActiveChat(chatId);
+    initialScrollDone.current = false;
+  };
+  
   useEffect(() => {
     if (!initialUsername || !user) return;
-    fetchChatId(db, user, initialUsername, setActiveChat);
+    fetchChatId(db, user, initialUsername, handleSetActiveChat);
   }, [initialUsername, user]);
+
   useEffect(() => {
     if (!activeChat) return;
     const unsubscribe = fetchMessages(db, activeChat, setMessages);
     return () => unsubscribe();
   }, [activeChat]);
+
+  // Handle initial scroll positioning when messages load
+  useEffect(() => {
+    if (!activeChat || !messages.length || !scrollAreaRef.current || initialScrollDone.current) return;
+    
+    // Slight delay to ensure DOM is updated
+    setTimeout(() => {
+      smartScroll(
+        scrollAreaRef, 
+        activeChat, 
+        messages, 
+        user, 
+        scrollPositions, 
+        setIsAtBottom, 
+        setNewMessagesCount
+      );
+      initialScrollDone.current = true;
+    }, 100);
+  }, [messages, activeChat, user, scrollPositions]);
 
   useEffect(() => {
     if (!activeChat || !messages.length || hasMarkedRead.current) return;
@@ -80,6 +115,7 @@ const useChatWindow = (initialUsername) => {
 
   useEffect(() => {
     hasMarkedRead.current = false;
+    initialScrollDone.current = false;
   }, [activeChat]);
 
   // Group messages by date
@@ -92,6 +128,7 @@ const useChatWindow = (initialUsername) => {
       return groups;
     }, {});
   }, [messages]);
+
   useEffect(() => {
     if (!scrollAreaRef.current || !messages.length || !activeChat) return;
     if (observerRef.current) observerRef.current.disconnect();
@@ -121,38 +158,43 @@ const useChatWindow = (initialUsername) => {
     return () => scrollElement.removeEventListener("scroll", handleScroll);
   }, [activeChat, messages]);
 
+  // Handle incoming messages
   useEffect(() => {
     if (!messages.length || !scrollAreaRef.current) return;
+    
     const lastMessage = messages[messages.length - 1];
     const isLastMessageFromUser = lastMessage?.sender === user.uid;
     const newCount = messages.length - previousMessagesLength.current;
+    const hasNewMessages = newCount > 0;
+    
+    // Update previous messages length
     previousMessagesLength.current = messages.length;
-    if (isAtBottom) {
+    
+    // If we're already at the bottom or the message is from current user
+    if (isAtBottom || isLastMessageFromUser) {
+      // Auto-scroll to bottom with new messages
+      scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, "smooth");
       setNewMessagesCount(0);
-    } else if (!isLastMessageFromUser && newCount > 0) {
+    } 
+    // If new messages arrived and we're not at bottom
+    else if (hasNewMessages && !isLastMessageFromUser) {
       setNewMessagesCount((prev) => prev + newCount);
     }
   }, [messages, user.uid, activeChat, isAtBottom]);
 
+  // Clean up function to save scroll position when unmounting
   useEffect(() => {
-    if (!messages.length || !scrollAreaRef.current) return;
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.sender === user.uid) {
-      setTimeout(() => {
-        scrollToBottom(
-          scrollAreaRef,
-          setNewMessagesCount,
-          setIsAtBottom,
-          "smooth"
-        );
-      }, 100);
-    }
-  }, [messages, user.uid, activeChat]);
+    return () => {
+      if (activeChat) {
+        saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
+      }
+    };
+  }, [activeChat]);
 
   return {
     username: initialUsername,
     activeChat,
-    setActiveChat,
+    setActiveChat: handleSetActiveChat,
     messages,
     sendMessage: handleSendMessage,
     setNewMessage,
@@ -179,4 +221,5 @@ const useChatWindow = (initialUsername) => {
     toggleSelectionMode,
   };
 };
+
 export default useChatWindow;
