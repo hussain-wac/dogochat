@@ -9,7 +9,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { MessageCircleIcon, MoreVertical, Trash, Search, UserPlus } from "lucide-react";
+import {
+  MessageCircleIcon,
+  MoreVertical,
+  Trash,
+  Search,
+  UserPlus,
+} from "lucide-react";
 import useChatList from "../../hooks/useChatlist";
 import { useSetAtom } from "jotai";
 import { chatdetails } from "../../jotai/globalState";
@@ -53,35 +59,45 @@ function ChatList({ setActiveChat }) {
     if (!timestamp) return "";
     const now = new Date();
     const messageDate = new Date(timestamp);
-    
+
     if (messageDate.toDateString() === now.toDateString()) {
-      return messageDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      return messageDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     }
-    
+
     const yesterday = new Date(now);
     yesterday.setDate(now.getDate() - 1);
     if (messageDate.toDateString() === yesterday.toDateString()) {
       return "Yesterday";
     }
-    
+
     const oneWeekAgo = new Date(now);
     oneWeekAgo.setDate(now.getDate() - 7);
     if (messageDate > oneWeekAgo) {
-      return messageDate.toLocaleDateString([], { weekday: 'short' });
+      return messageDate.toLocaleDateString([], { weekday: "short" });
     }
-    
-    return messageDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+
+    return messageDate.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const getInitials = (name) => {
     if (!name) return "?";
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-neutral-900">
       <Card className="flex flex-col h-full border-none shadow-none">
-
         <CardContent className="p-0 flex-1 min-h-0">
           <ScrollArea className="h-full">
             {isLoading ? (
@@ -103,7 +119,13 @@ function ChatList({ setActiveChat }) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
-                          onClick={() => handleChatSelect(chat.refid, chat.name, chat.profilePic)}
+                          onClick={() =>
+                            handleChatSelect(
+                              chat.refid,
+                              chat.name,
+                              chat.profilePic
+                            )
+                          }
                           className="p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer flex items-center space-x-3 transition-colors"
                         >
                           <div className="relative flex-shrink-0">
@@ -135,8 +157,12 @@ function ChatList({ setActiveChat }) {
                             </div>
                             <div className="flex items-center justify-between mt-1">
                               <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate pr-2">
-                                {chat.lastMessage?.text || "No messages yet"}
+                                {chat.lastMessage?.text?.length > 30
+                                  ? chat.lastMessage.text.substring(0, 30) +
+                                    "..."
+                                  : chat.lastMessage?.text || "No messages yet"}
                               </p>
+
                               {chat.unreadCount > 0 && (
                                 <Badge className="ml-2 bg-orange-500 hover:bg-orange-500 rounded-full h-5 min-w-5 flex items-center justify-center px-1.5 text-xs">
                                   {chat.unreadCount}
@@ -145,12 +171,18 @@ function ChatList({ setActiveChat }) {
                             </div>
                           </div>
                           <DropdownMenu>
-                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenuTrigger
+                              asChild
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <button className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors flex-shrink-0">
                                 <MoreVertical className="w-5 h-5 text-neutral-500" />
                               </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40 shadow-lg border border-neutral-200 dark:border-neutral-700">
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-40 shadow-lg border border-neutral-200 dark:border-neutral-700"
+                            >
                               <DropdownMenuItem
                                 className="text-red-500 hover:text-red-600 dark:hover:text-red-400 flex items-center cursor-pointer px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                                 onClick={(e) => confirmDelete(chat.refid, e)}
@@ -162,7 +194,10 @@ function ChatList({ setActiveChat }) {
                           </DropdownMenu>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent side="right" className="bg-neutral-800 text-white border-none px-2 py-1 text-sm shadow-md">
+                      <TooltipContent
+                        side="right"
+                        className="bg-neutral-800 text-white border-none px-2 py-1 text-sm shadow-md"
+                      >
                         Chat with {chat.name}
                       </TooltipContent>
                     </Tooltip>
@@ -174,7 +209,9 @@ function ChatList({ setActiveChat }) {
                 <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mb-4">
                   <MessageCircleIcon className="h-8 w-8 text-orange-500" />
                 </div>
-                <p className="text-neutral-600 dark:text-neutral-300 mb-2 font-medium">No chats yet</p>
+                <p className="text-neutral-600 dark:text-neutral-300 mb-2 font-medium">
+                  No chats yet
+                </p>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-xs">
                   Start a new conversation by searching for users
                 </p>
@@ -191,12 +228,16 @@ function ChatList({ setActiveChat }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 shadow-xl rounded-lg">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">Delete Chat?</DialogTitle>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">This will permanently delete all messages in this chat.</p>
+            <DialogTitle className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+              Delete Chat?
+            </DialogTitle>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
+              This will permanently delete all messages in this chat.
+            </p>
           </DialogHeader>
           <DialogFooter className="mt-6 flex gap-2 sm:gap-0 sm:justify-end">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setOpen(false)}
               className="w-full sm:w-auto border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
             >
