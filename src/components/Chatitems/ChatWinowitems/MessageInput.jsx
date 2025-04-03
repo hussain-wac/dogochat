@@ -19,26 +19,10 @@ import useTypingStatus from "../../../hooks/useTypingStatus";
 
 const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
   const { showEmojiPicker, setShowEmojiPicker, handleEmojiClick } = useEmojipic(setNewMessage);
-  const { handleTyping, typingUsersNames, typingUsersCount } = useTypingStatus(chatId);
+  const { handleTyping } = useTypingStatus(chatId);
 
   return (
     <div className="p-3 border-t dark:border-neutral-700 bg-white dark:bg-neutral-900 shrink-0">
-      {/* Typing Indicator */}
-      {typingUsersCount > 0 && (
-        <div className="text-sm text-neutral-500 mb-2 max-w-3xl mx-auto flex items-center space-x-2">
-          <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
-            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
-          </div>
-          <span>
-            {typingUsersCount === 1 
-              ? `${typingUsersNames} is typing...`
-              : `${typingUsersNames} are typing...`}
-          </span>
-        </div>
-      )}
-
       <div className="flex items-center space-x-2 max-w-3xl mx-auto">
         <div className="flex space-x-1">
           <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>

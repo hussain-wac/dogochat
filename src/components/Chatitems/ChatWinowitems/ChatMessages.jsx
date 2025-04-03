@@ -126,7 +126,7 @@ const ChatMessages = ({
             ))
           )}
 
-          {/* Enhanced Typing Indicator with Shimmer Effect */}
+          {/* WhatsApp-style Typing Indicator as a message bubble */}
           {typingUsersCount > 0 && (
             <div className="flex justify-start mb-3">
               <div className="flex flex-col max-w-[70%]">
