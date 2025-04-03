@@ -23,6 +23,7 @@ const useMessageHandlers = ({
   const currentUser = useAtomValue(globalState);
 
   const handleSendMessage = () => {
+     if (!newMessage || newMessage.trim() === "") return;
     if (!newMessage.trim() || !activeChat || !currentUser?.uid) return;
     sendMessage(db, activeChat, newMessage, currentUser.uid, (behavior) =>
       scrollToBottom(
