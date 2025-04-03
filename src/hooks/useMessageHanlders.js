@@ -1,7 +1,11 @@
 // useMessageHandlers.js
 import { useAtomValue } from "jotai";
 import { globalState } from "../jotai/globalState";
-import { sendMessage, markMessageAsRead, deleteMessages } from "./utils/chatOperations";
+import {
+  sendMessage,
+  markMessageAsRead,
+  deleteMessages,
+} from "./utils/chatOperations";
 import { scrollToBottom } from "./utils/scrollUtils";
 
 const useMessageHandlers = ({
@@ -9,15 +13,12 @@ const useMessageHandlers = ({
   activeChat,
   newMessage,
   setNewMessage,
-  user,
   scrollAreaRef,
   setNewMessagesCount,
   setIsAtBottom,
-  setShowEmojiPicker,
   selectedMessages,
   setSelectedMessages,
   setIsSelectionMode,
-  setMessages
 }) => {
   const currentUser = useAtomValue(globalState);
 
@@ -37,11 +38,6 @@ const useMessageHandlers = ({
   const handleMarkMessageAsRead = (messageId) => {
     if (!activeChat || !messageId || !currentUser?.uid) return;
     markMessageAsRead(db, activeChat, messageId, currentUser.uid);
-  };
-
-  const handleEmojiClick = (emojiObject) => {
-    setNewMessage((prevMessage) => prevMessage + emojiObject.emoji);
-    setShowEmojiPicker(false);
   };
 
   const toggleMessageSelection = (messageId) => {
@@ -71,10 +67,9 @@ const useMessageHandlers = ({
   return {
     handleSendMessage,
     handleMarkMessageAsRead,
-    handleEmojiClick,
     toggleMessageSelection,
     handleDeleteMessages,
-    toggleSelectionMode
+    toggleSelectionMode,
   };
 };
 

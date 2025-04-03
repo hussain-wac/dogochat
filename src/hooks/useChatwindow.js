@@ -33,7 +33,6 @@ const useChatWindow = (initialUsername) => {
   const {
     handleSendMessage,
     handleMarkMessageAsRead,
-    handleEmojiClick,
     toggleMessageSelection,
     handleDeleteMessages,
     toggleSelectionMode,
