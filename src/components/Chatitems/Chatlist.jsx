@@ -27,9 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useFirebasePresence } from "../../hooks/useFirebasePresence"; 
-
-// ChatItem component
+import { useFirebasePresence } from "../../hooks/useFirebasePresence";
 function ChatItem({ chat, onSelect, onDelete }) {
   const { isOnline } = useFirebasePresence(chat.name);
 
