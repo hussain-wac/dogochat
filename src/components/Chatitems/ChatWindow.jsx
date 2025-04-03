@@ -91,6 +91,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
           isSelectionMode={isSelectionMode}
           isMobile={isMobile}
           onBackClick={handleBackToChats}
+          chatId={activeChat}
         />
         <CardContent className="flex flex-col flex-1 p-0 overflow-hidden bg-neutral-50 dark:bg-neutral-900 relative">
           <ChatMessages

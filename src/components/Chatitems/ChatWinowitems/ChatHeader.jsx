@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import useTypingStatus from "../../../hooks/useTypingStatus";
 
 const ChatHeader = ({
   chatdet,
@@ -15,12 +16,17 @@ const ChatHeader = ({
   lastOnline,
   toggleSelectionMode,
   isSelectionMode,
+  chatId,
 }) => {
   const formatLastSeen = (timestamp) => {
     if (!timestamp) return "Last seen: Unknown";
     const date = new Date(timestamp);
     return `Last seen: ${date.toLocaleString()}`;
   };
+
+  // Get typing status information
+  const { typingUsersCount, typingUsersNames } = useTypingStatus(chatId);
+  const isTyping = typingUsersCount > 0;
 
   return (
     <CardHeader className="border-b dark:border-neutral-700 h-16 min-h-[4rem] sticky top-0 z-10 bg-white dark:bg-neutral-900 px-4 py-3 shadow-sm flex items-center justify-between">
@@ -41,7 +47,16 @@ const ChatHeader = ({
             {chatdet.chatname || username}
           </CardTitle>
           <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
-            {isOpponentOnline ? (
+            {isTyping ? (
+              <span className="text-green-500 flex items-center">
+                <span className="flex space-x-1 mr-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-bounce" style={{ animationDelay: "0s" }}></span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-bounce" style={{ animationDelay: "0.2s" }}></span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-bounce" style={{ animationDelay: "0.4s" }}></span>
+                </span>
+                {typingUsersCount === 1 ? ` typing...` : `${typingUsersNames} are typing...`}
+              </span>
+            ) : isOpponentOnline ? (
               <span className="text-green-500 flex items-center">
                 <span className="h-2 w-2 rounded-full bg-green-500 mr-1.5 animate-pulse" />
                 Online

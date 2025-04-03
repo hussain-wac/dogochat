@@ -6,6 +6,7 @@ import { useAuth } from "./useAuth";
 const useTypingStatus = (chatId) => {
   const { user } = useAuth();
   const [usersTyping, setUsersTyping] = useState({});
+  let typingTimeout;
 
   const typingRef = ref(realtimeDb, `typingStatus/${chatId}/${user?.uid}`);
   const allTypingRef = ref(realtimeDb, `typingStatus/${chatId}`);
@@ -31,6 +32,12 @@ const useTypingStatus = (chatId) => {
           displayName: user.displayName || "Anonymous",
           lastUpdated: Date.now(),
         }).catch(console.error);
+
+        // Reset inactivity timeout
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+          remove(typingRef).catch(console.error);
+        }, 5000); // Clears typing status after 5 seconds of inactivity
       } else {
         remove(typingRef).catch(console.error);
       }
@@ -45,6 +52,11 @@ const useTypingStatus = (chatId) => {
     },
     [updateTypingStatus]
   );
+
+  // Clear typing status when the message is sent
+  const clearTypingStatus = useCallback(() => {
+    remove(typingRef).catch(console.error);
+  }, [typingRef]);
 
   // Listen for other users' typing status
   useEffect(() => {
@@ -79,6 +91,7 @@ const useTypingStatus = (chatId) => {
 
   return {
     handleTyping,
+    clearTypingStatus,
     typingUsersCount: Object.keys(usersTyping).length,
     typingUsersNames: Object.values(usersTyping)
       .map((u) => u.displayName)
