@@ -11,7 +11,7 @@ const useTypingStatus = (chatId) => {
   const typingRef = ref(realtimeDb, `typingStatus/${chatId}/${user?.uid}`);
   const allTypingRef = ref(realtimeDb, `typingStatus/${chatId}`);
 
-  // Debounce function to optimize database writes
+  // Optimized debounce function
   const debounce = (func, delay) => {
     let timeout;
     return (...args) => {
@@ -37,11 +37,11 @@ const useTypingStatus = (chatId) => {
         clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => {
           remove(typingRef).catch(console.error);
-        }, 5000); // Clears typing status after 5 seconds of inactivity
+        }, 4000); // Clears typing status after 4s of inactivity
       } else {
         remove(typingRef).catch(console.error);
       }
-    }, 500), // 500ms debounce
+    }, 800), // Debounce set to 800ms
     [user, chatId, typingRef]
   );
 
@@ -70,7 +70,7 @@ const useTypingStatus = (chatId) => {
         .filter(
           ([_, status]) =>
             status.isTyping &&
-            status.lastUpdated > currentTime - 5000 &&
+            status.lastUpdated > currentTime - 4000 && // Check if within 4s
             status.userId !== user.uid
         )
         .reduce((acc, [_, status]) => {
