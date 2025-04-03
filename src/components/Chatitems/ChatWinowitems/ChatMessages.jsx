@@ -18,7 +18,7 @@ const ChatMessages = ({
     <ScrollArea
       ref={scrollAreaRef}
       className="flex-1 px-4 py-2"
-      style={{ overflowY: "auto" }} // Ensure vertical scrolling is enabled
+      style={{ overflowY: "auto" }} 
     >
       <div className="space-y-4 pb-6">
         {isLoading ? (

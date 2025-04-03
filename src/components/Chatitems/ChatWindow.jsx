@@ -5,7 +5,7 @@ import ChatHeader from "./ChatWinowitems/ChatHeader";
 import ChatMessages from "./ChatWinowitems/ChatMessages";
 import NewMessagesBadge from "./ChatWinowitems/NewMessagesBadge";
 import MessageInput from "./ChatWinowitems/MessageInput";
-import { MessageCircleIcon, ArrowLeft } from "lucide-react";
+import { MessageCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -16,9 +16,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
     sendMessage,
     setNewMessage,
     newMessage,
-    showEmojiPicker,
-    setShowEmojiPicker,
-    handleEmojiClick,
+   
     scrollAreaRef,
     isLoading,
     chatdet,
@@ -116,9 +114,6 @@ function ChatWindow({ initialUsername, onBackClick }) {
             newMessage={newMessage}
             setNewMessage={setNewMessage}
             sendMessage={sendMessage}
-            showEmojiPicker={showEmojiPicker}
-            setShowEmojiPicker={setShowEmojiPicker}
-            handleEmojiClick={handleEmojiClick}
             isMobile={isMobile}
           />
         </CardContent>

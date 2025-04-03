@@ -13,14 +13,12 @@ import { observeMessages } from "./utils/intersectionUtils";
 import { ref, onValue } from "firebase/database";
 import { db, realtimeDb } from "../firebase";
 import useMessageHandlers from "./useMessageHanlders";
-
 const useChatWindow = (initialUsername) => {
   const user = useAtomValue(globalState);
   const chatdet = useAtomValue(chatdetails);
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const scrollAreaRef = useRef(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [newMessagesCount, setNewMessagesCount] = useState(0);
@@ -48,7 +46,6 @@ const useChatWindow = (initialUsername) => {
     scrollAreaRef,
     setNewMessagesCount,
     setIsAtBottom,
-    setShowEmojiPicker,
     selectedMessages,
     setSelectedMessages,
     setIsSelectionMode,
@@ -64,7 +61,10 @@ const useChatWindow = (initialUsername) => {
   // Presence listener
   useEffect(() => {
     if (!initialUsername || !user) return;
-    const presenceRef = ref(realtimeDb, `presence/${initialUsername.toLowerCase()}`);
+    const presenceRef = ref(
+      realtimeDb,
+      `presence/${initialUsername.toLowerCase()}`
+    );
     const handlePresenceChange = (snapshot) => {
       const data = snapshot.val();
       setIsOpponentOnline(data?.online || false);
@@ -108,7 +108,6 @@ const useChatWindow = (initialUsername) => {
     hasMarkedRead.current = false;
   }, [activeChat]);
 
-  // Group messages by date
   const groupedMessages = useMemo(() => {
     if (!messages || messages.length === 0) return {};
     return messages.reduce((groups, msg) => {
@@ -119,7 +118,6 @@ const useChatWindow = (initialUsername) => {
     }, {});
   }, [messages]);
 
-  // Observe messages for intersection (mark as read when in view)
   useEffect(() => {
     if (!scrollAreaRef.current || !messages.length || !activeChat) return;
     if (observerRef.current) observerRef.current.disconnect();
@@ -188,15 +186,6 @@ const useChatWindow = (initialUsername) => {
       }, 100);
     }
   }, [messages, user.uid, activeChat]);
-
-  // Last sent message for chat preview
-  const recentMessage = useMemo(() => {
-    const opponentMessages = messages.filter((msg) => msg.sender !== user.uid);
-    return opponentMessages.length
-      ? opponentMessages[opponentMessages.length - 1]
-      : messages[messages.length - 1];
-  }, [messages, user.uid]);
-
   return {
     username: initialUsername,
     activeChat,
@@ -205,15 +194,17 @@ const useChatWindow = (initialUsername) => {
     sendMessage: handleSendMessage,
     setNewMessage,
     newMessage,
-    showEmojiPicker,
-    setShowEmojiPicker,
-    handleEmojiClick,
     scrollAreaRef,
     isLoading: !activeChat || !messages,
     chatdet,
     newMessagesCount,
     scrollToBottom: (behavior) =>
-      scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, behavior),
+      scrollToBottom(
+        scrollAreaRef,
+        setNewMessagesCount,
+        setIsAtBottom,
+        behavior
+      ),
     groupedMessages,
     formatMessageTime,
     user,
@@ -226,8 +217,6 @@ const useChatWindow = (initialUsername) => {
     handleDeleteMessages,
     isSelectionMode,
     toggleSelectionMode,
-    recentMessage,
   };
 };
-
 export default useChatWindow;
