@@ -5,7 +5,11 @@ import { useAtomValue } from "jotai";
 import { fetchMessages } from "./utils/messageFetch";
 import { formatMessageTime } from "./utils/timeFormat";
 import { markMessageAsRead, fetchChatId } from "./utils/chatOperations";
-import { getScrollElement, checkIsAtBottom, scrollToBottom } from "./utils/scrollUtils";
+import {
+  getScrollElement,
+  checkIsAtBottom,
+  scrollToBottom,
+} from "./utils/scrollUtils";
 import { observeMessages } from "./utils/intersectionUtils";
 import useMessageHandlers from "./useMessageHandlers";
 import { db } from "../firebase";
@@ -48,15 +52,12 @@ const useChatWindow = (initialUsername) => {
     if (!initialUsername || !user) return;
     fetchChatId(db, user, initialUsername, setActiveChat);
   }, [initialUsername, user]);
-
-  // Fetch messages for active chat
   useEffect(() => {
     if (!activeChat) return;
     const unsubscribe = fetchMessages(db, activeChat, setMessages);
     return () => unsubscribe();
   }, [activeChat]);
 
-  // Mark messages as read
   useEffect(() => {
     if (!activeChat || !messages.length || hasMarkedRead.current) return;
     const unreadMessages = messages.filter(
@@ -64,7 +65,9 @@ const useChatWindow = (initialUsername) => {
     );
     if (unreadMessages.length > 0) {
       Promise.all(
-        unreadMessages.map((msg) => markMessageAsRead(db, activeChat, msg.id, user.uid))
+        unreadMessages.map((msg) =>
+          markMessageAsRead(db, activeChat, msg.id, user.uid)
+        )
       ).then(() => {
         hasMarkedRead.current = true;
         setNewMessagesCount(0);
@@ -89,9 +92,6 @@ const useChatWindow = (initialUsername) => {
       return groups;
     }, {});
   }, [messages]);
-
-
-
   useEffect(() => {
     if (!scrollAreaRef.current || !messages.length || !activeChat) return;
     if (observerRef.current) observerRef.current.disconnect();
@@ -102,13 +102,12 @@ const useChatWindow = (initialUsername) => {
       scrollAreaRef
     );
     const scrollElement = getScrollElement(scrollAreaRef);
-    scrollElement?.querySelectorAll("[data-message-id]").forEach((element) =>
-      observerRef.current.observe(element)
-    );
+    scrollElement
+      ?.querySelectorAll("[data-message-id]")
+      .forEach((element) => observerRef.current.observe(element));
     return () => observerRef.current?.disconnect();
   }, [messages, activeChat, user.uid, handleMarkMessageAsRead]);
 
-  // Detect scrolling position
   useEffect(() => {
     if (!scrollAreaRef.current || !messages.length || !activeChat) return;
     const scrollElement = getScrollElement(scrollAreaRef);
@@ -122,7 +121,6 @@ const useChatWindow = (initialUsername) => {
     return () => scrollElement.removeEventListener("scroll", handleScroll);
   }, [activeChat, messages]);
 
-  // Handle new messages count logic
   useEffect(() => {
     if (!messages.length || !scrollAreaRef.current) return;
     const lastMessage = messages[messages.length - 1];
@@ -136,13 +134,17 @@ const useChatWindow = (initialUsername) => {
     }
   }, [messages, user.uid, activeChat, isAtBottom]);
 
-  // Auto-scroll when the user sends a message
   useEffect(() => {
     if (!messages.length || !scrollAreaRef.current) return;
     const lastMessage = messages[messages.length - 1];
     if (lastMessage?.sender === user.uid) {
       setTimeout(() => {
-        scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, "smooth");
+        scrollToBottom(
+          scrollAreaRef,
+          setNewMessagesCount,
+          setIsAtBottom,
+          "smooth"
+        );
       }, 100);
     }
   }, [messages, user.uid, activeChat]);
@@ -160,7 +162,12 @@ const useChatWindow = (initialUsername) => {
     chatdet,
     newMessagesCount,
     scrollToBottom: (behavior) =>
-      scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, behavior),
+      scrollToBottom(
+        scrollAreaRef,
+        setNewMessagesCount,
+        setIsAtBottom,
+        behavior
+      ),
     groupedMessages,
     formatMessageTime,
     user,
