@@ -11,16 +11,15 @@ export const sendMessage = async (db, activeChat, newMessage, userId, scrollToBo
         text: newMessage,
         timestamp: new Date(),
         status: "sent",
-        readBy: [userId], // Sender has "read" it by default
+        readBy: [userId], 
       }
     );
 
-    // Check the message status before updating to "delivered"
+  
     setTimeout(async () => {
       const messageDoc = await getDoc(messageRef);
       const currentStatus = messageDoc.data().status;
 
-      // Only update to "delivered" if it hasn't been marked as "read"
       if (currentStatus === "sent") {
         await updateDoc(messageRef, {
           status: "delivered",

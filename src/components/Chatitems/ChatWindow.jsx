@@ -5,9 +5,10 @@ import ChatHeader from "./ChatWinowitems/ChatHeader";
 import ChatMessages from "./ChatWinowitems/ChatMessages";
 import NewMessagesBadge from "./ChatWinowitems/NewMessagesBadge";
 import MessageInput from "./ChatWinowitems/MessageInput";
-import { MessageCircleIcon, ArrowLeft } from "lucide-react";
+import { MessageCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useFirebasePresence } from "../../hooks/useFirebasePresence";
 
 function ChatWindow({ initialUsername, onBackClick }) {
   const {
@@ -16,9 +17,6 @@ function ChatWindow({ initialUsername, onBackClick }) {
     sendMessage,
     setNewMessage,
     newMessage,
-    showEmojiPicker,
-    setShowEmojiPicker,
-    handleEmojiClick,
     scrollAreaRef,
     isLoading,
     chatdet,
@@ -27,15 +25,13 @@ function ChatWindow({ initialUsername, onBackClick }) {
     groupedMessages,
     formatMessageTime,
     user,
-    isOpponentOnline,
-    lastOnline,
     selectedMessages,
     toggleMessageSelection,
     handleDeleteMessages,
     isSelectionMode,
     toggleSelectionMode,
   } = useChatWindow(initialUsername);
-
+  const presence = useFirebasePresence(initialUsername);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
 
@@ -44,8 +40,8 @@ function ChatWindow({ initialUsername, onBackClick }) {
       setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleBackToChats = () => {
@@ -66,12 +62,12 @@ function ChatWindow({ initialUsername, onBackClick }) {
           {username ? "Loading chat..." : "Select a chat to start messaging"}
         </p>
         <p className="text-sm text-neutral-400 text-center max-w-sm">
-          {username 
-            ? "Just a moment while we load your conversation..." 
+          {username
+            ? "Just a moment while we load your conversation..."
             : "Choose from your existing chats or search for users to start a new conversation"}
         </p>
         {isMobile && (
-          <Button 
+          <Button
             onClick={handleBackToChats}
             className="mt-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full px-4"
           >
@@ -89,12 +85,13 @@ function ChatWindow({ initialUsername, onBackClick }) {
         <ChatHeader
           chatdet={chatdet}
           username={username}
-          isOpponentOnline={isOpponentOnline}
-          lastOnline={lastOnline}
+          isOpponentOnline={presence.isOnline}
+          lastOnline={presence.lastSeen}
           toggleSelectionMode={toggleSelectionMode}
           isSelectionMode={isSelectionMode}
           isMobile={isMobile}
           onBackClick={handleBackToChats}
+          chatId={activeChat}
         />
         <CardContent className="flex flex-col flex-1 p-0 overflow-hidden bg-neutral-50 dark:bg-neutral-900 relative">
           <ChatMessages
@@ -107,6 +104,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
             toggleMessageSelection={toggleMessageSelection}
             handleDeleteMessages={handleDeleteMessages}
             isSelectionMode={isSelectionMode}
+            chatId={activeChat} // Pass activeChat as chatId
           />
           <NewMessagesBadge
             newMessagesCount={newMessagesCount}
@@ -116,10 +114,8 @@ function ChatWindow({ initialUsername, onBackClick }) {
             newMessage={newMessage}
             setNewMessage={setNewMessage}
             sendMessage={sendMessage}
-            showEmojiPicker={showEmojiPicker}
-            setShowEmojiPicker={setShowEmojiPicker}
-            handleEmojiClick={handleEmojiClick}
-            isMobile={isMobile}
+            chatId={activeChat} // Pass activeChat as chatId
+            isMobile={isMobile} // Pass isMobile if needed in MessageInput
           />
         </CardContent>
       </Card>

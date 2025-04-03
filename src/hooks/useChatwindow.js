@@ -4,188 +4,150 @@ import { chatdetails, globalState } from "../jotai/globalState";
 import { useAtomValue } from "jotai";
 import { fetchMessages } from "./utils/messageFetch";
 import { formatMessageTime } from "./utils/timeFormat";
-import { sendMessage, markMessageAsRead, fetchChatId, deleteMessages } from "./utils/chatOperations";
-import { getScrollElement, checkIsAtBottom, scrollToBottom } from "./utils/scrollUtils";
+import { markMessageAsRead, fetchChatId } from "./utils/chatOperations";
+import {
+  getScrollElement,
+  checkIsAtBottom,
+  scrollToBottom,
+} from "./utils/scrollUtils";
 import { observeMessages } from "./utils/intersectionUtils";
-import { ref, onValue } from "firebase/database";
-import { db, realtimeDb } from "../firebase";
-
+import useMessageHandlers from "./useMessageHandlers";
+import { db } from "../firebase";
 const useChatWindow = (initialUsername) => {
   const user = useAtomValue(globalState);
   const chatdet = useAtomValue(chatdetails);
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const scrollAreaRef = useRef(null);
+  const observerRef = useRef(null);
+  const hasMarkedRead = useRef(false);
+  const previousMessagesLength = useRef(0);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [newMessagesCount, setNewMessagesCount] = useState(0);
-  const lastMessageCountRef = useRef(0);
-  const observerRef = useRef(null);
-  const [isOpponentOnline, setIsOpponentOnline] = useState(false);
-  const [lastOnline, setLastOnline] = useState(null);
-  const hasMarkedRead = useRef(false);
   const [selectedMessages, setSelectedMessages] = useState([]);
-  const [isSelectionMode, setIsSelectionMode] = useState(false); // New state for selection mode
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
-  // Fetch chat ID
+  const {
+    handleSendMessage,
+    handleMarkMessageAsRead,
+    toggleMessageSelection,
+    handleDeleteMessages,
+    toggleSelectionMode,
+  } = useMessageHandlers({
+    db,
+    activeChat,
+    newMessage,
+    setNewMessage,
+    user,
+    scrollAreaRef,
+    setNewMessagesCount,
+    setIsAtBottom,
+    selectedMessages,
+    setSelectedMessages,
+    setIsSelectionMode,
+    setMessages,
+  });
   useEffect(() => {
     if (!initialUsername || !user) return;
     fetchChatId(db, user, initialUsername, setActiveChat);
   }, [initialUsername, user]);
-
-  // Presence listener
-  useEffect(() => {
-    if (!initialUsername || !user) return;
-    const lowercaseUsername = initialUsername.toLowerCase();
-    const presenceRef = ref(realtimeDb, `presence/${lowercaseUsername}`);
-    const handlePresenceChange = (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        setIsOpponentOnline(data?.online || false);
-        setLastOnline(data?.lastOnline || null);
-      } else {
-        setIsOpponentOnline(false);
-        setLastOnline(null);
-      }
-    };
-    const unsubscribe = onValue(presenceRef, handlePresenceChange, (error) => {
-      console.error("Presence listener error:", error);
-    });
-    return () => unsubscribe();
-  }, [initialUsername, user]);
-
-  // Real-time messages listener
   useEffect(() => {
     if (!activeChat) return;
-    const unsubscribe = fetchMessages(db, activeChat, (msgs) => {
-      setMessages(msgs);
-    });
+    const unsubscribe = fetchMessages(db, activeChat, setMessages);
     return () => unsubscribe();
   }, [activeChat]);
 
-  // Mark unread messages as read
   useEffect(() => {
-    if (!activeChat || !messages.length || !user.uid || hasMarkedRead.current) return;
+    if (!activeChat || !messages.length || hasMarkedRead.current) return;
     const unreadMessages = messages.filter(
       (msg) => !msg.readBy?.includes(user.uid) && msg.sender !== user.uid
     );
     if (unreadMessages.length > 0) {
       Promise.all(
-        unreadMessages.map((msg) => markMessageAsRead(db, activeChat, msg.id, user.uid))
+        unreadMessages.map((msg) =>
+          markMessageAsRead(db, activeChat, msg.id, user.uid)
+        )
       ).then(() => {
         hasMarkedRead.current = true;
+        setNewMessagesCount(0);
       });
     } else {
       hasMarkedRead.current = true;
+      setNewMessagesCount(0);
     }
-  }, [activeChat, messages, user.uid]);
+  }, [messages, activeChat, user.uid]);
 
   useEffect(() => {
     hasMarkedRead.current = false;
   }, [activeChat]);
 
+  // Group messages by date
   const groupedMessages = useMemo(() => {
-    const groups = {};
-    messages.forEach((msg) => {
-      const date = msg.timestamp.toDateString();
-      if (!groups[date]) groups[date] = [];
+    if (!messages.length) return {};
+    return messages.reduce((groups, msg) => {
+      const date = new Date(msg.timestamp).toDateString();
+      groups[date] = groups[date] || [];
       groups[date].push(msg);
-    });
-    return groups;
+      return groups;
+    }, {});
   }, [messages]);
-
-  const handleSendMessage = () => {
-    sendMessage(db, activeChat, newMessage, user.uid, (behavior) =>
-      scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, behavior)
-    );
-    setNewMessage("");
-  };
-
-  const handleMarkMessageAsRead = (messageId) => {
-    markMessageAsRead(db, activeChat, messageId, user.uid);
-  };
-
-  const handleEmojiClick = (emojiObject) => {
-    setNewMessage((prevMessage) => prevMessage + emojiObject.emoji);
-    setShowEmojiPicker(false);
-  };
-
-  const toggleMessageSelection = (messageId) => {
-    setSelectedMessages((prev) =>
-      prev.includes(messageId)
-        ? prev.filter((id) => id !== messageId)
-        : [...prev, messageId]
-    );
-  };
-
-  const handleDeleteMessages = async () => {
-    if (selectedMessages.length === 0) return;
-    try {
-      await deleteMessages(db, activeChat, selectedMessages);
-      // No need to filter locally since fetchMessages will update the state
-      setSelectedMessages([]);
-      setIsSelectionMode(false); // Exit selection mode after deletion
-    } catch (error) {
-      console.error("Error deleting messages:", error);
-    }
-  };
-
-  const toggleSelectionMode = () => {
-    setIsSelectionMode((prev) => !prev);
-    setSelectedMessages([]); // Clear selection when toggling mode
-  };
-
   useEffect(() => {
     if (!scrollAreaRef.current || !messages.length || !activeChat) return;
     if (observerRef.current) observerRef.current.disconnect();
-    observerRef.current = observeMessages(messages, user.uid, handleMarkMessageAsRead, scrollAreaRef);
+    observerRef.current = observeMessages(
+      messages,
+      user.uid,
+      handleMarkMessageAsRead,
+      scrollAreaRef
+    );
     const scrollElement = getScrollElement(scrollAreaRef);
-    if (scrollElement) {
-      const messageElements = scrollElement.querySelectorAll("[data-message-id]");
-      messageElements.forEach((element) => observerRef.current.observe(element));
-    }
-    return () => {
-      if (observerRef.current) observerRef.current.disconnect();
-    };
-  }, [messages, activeChat, user.uid]);
+    scrollElement
+      ?.querySelectorAll("[data-message-id]")
+      .forEach((element) => observerRef.current.observe(element));
+    return () => observerRef.current?.disconnect();
+  }, [messages, activeChat, user.uid, handleMarkMessageAsRead]);
 
   useEffect(() => {
+    if (!scrollAreaRef.current || !messages.length || !activeChat) return;
     const scrollElement = getScrollElement(scrollAreaRef);
-    if (scrollElement) {
-      const handleScroll = () => {
-        const isBottom = checkIsAtBottom(scrollAreaRef);
-        setIsAtBottom(isBottom);
-        if (isBottom) setNewMessagesCount(0);
-      };
-      scrollElement.addEventListener("scroll", handleScroll);
-      return () => scrollElement.removeEventListener("scroll", handleScroll);
-    }
-  }, [activeChat]);
+    if (!scrollElement) return;
+    const handleScroll = () => {
+      const isBottom = checkIsAtBottom(scrollAreaRef);
+      setIsAtBottom(isBottom);
+      if (isBottom) setNewMessagesCount(0);
+    };
+    scrollElement.addEventListener("scroll", handleScroll);
+    return () => scrollElement.removeEventListener("scroll", handleScroll);
+  }, [activeChat, messages]);
 
   useEffect(() => {
     if (!messages.length || !scrollAreaRef.current) return;
-    const scrollElement = getScrollElement(scrollAreaRef);
     const lastMessage = messages[messages.length - 1];
     const isLastMessageFromUser = lastMessage?.sender === user.uid;
-    if (isLastMessageFromUser) {
-      setTimeout(() => scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, "smooth"), 100);
-    } else if (!isAtBottom) {
-      const unreadCount = messages.filter(
-        (msg) => !msg.readBy?.includes(user.uid) && msg.sender !== user.uid
-      ).length;
-      setNewMessagesCount(unreadCount > 0 ? unreadCount : messages.length - lastMessageCountRef.current);
+    const newCount = messages.length - previousMessagesLength.current;
+    previousMessagesLength.current = messages.length;
+    if (isAtBottom) {
+      setNewMessagesCount(0);
+    } else if (!isLastMessageFromUser && newCount > 0) {
+      setNewMessagesCount((prev) => prev + newCount);
     }
-    lastMessageCountRef.current = messages.length;
-  }, [messages, user.uid, activeChat]);
+  }, [messages, user.uid, activeChat, isAtBottom]);
 
   useEffect(() => {
-    if (messages.length && scrollAreaRef.current && activeChat) {
-      scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, "auto");
-      setNewMessagesCount(0);
-      lastMessageCountRef.current = messages.length;
+    if (!messages.length || !scrollAreaRef.current) return;
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.sender === user.uid) {
+      setTimeout(() => {
+        scrollToBottom(
+          scrollAreaRef,
+          setNewMessagesCount,
+          setIsAtBottom,
+          "smooth"
+        );
+      }, 100);
     }
-  }, [activeChat]);
+  }, [messages, user.uid, activeChat]);
 
   return {
     username: initialUsername,
@@ -195,27 +157,27 @@ const useChatWindow = (initialUsername) => {
     sendMessage: handleSendMessage,
     setNewMessage,
     newMessage,
-    showEmojiPicker,
-    setShowEmojiPicker,
-    handleEmojiClick,
     scrollAreaRef,
     isLoading: !activeChat || !messages,
     chatdet,
     newMessagesCount,
-    scrollToBottom: (behavior) => scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, behavior),
+    scrollToBottom: (behavior) =>
+      scrollToBottom(
+        scrollAreaRef,
+        setNewMessagesCount,
+        setIsAtBottom,
+        behavior
+      ),
     groupedMessages,
     formatMessageTime,
     user,
     isAtBottom,
     markMessageAsRead: handleMarkMessageAsRead,
-    isOpponentOnline,
-    lastOnline,
     selectedMessages,
     toggleMessageSelection,
     handleDeleteMessages,
-    isSelectionMode, // Expose selection mode
-    toggleSelectionMode, // Expose toggle function
+    isSelectionMode,
+    toggleSelectionMode,
   };
 };
-
 export default useChatWindow;
