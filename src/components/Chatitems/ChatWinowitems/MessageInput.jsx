@@ -35,7 +35,11 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
                 <SmileIcon className="h-5 w-5 text-neutral-500 hover:text-orange-500" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent side="top" className="w-auto p-0 border-none shadow-lg">
+            <PopoverContent 
+              side="bottom" 
+              className="w-auto p-0 border-none shadow-lg"
+              align="start"
+            >
               <EmojiPicker onEmojiClick={handleEmojiClick} height={350} />
             </PopoverContent>
           </Popover>
