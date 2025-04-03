@@ -7,10 +7,11 @@ import { markMessageAsRead, fetchChatId } from "./utils/chatOperations";
 import {
   getScrollElement,
   checkIsAtBottom,
-  scrollToBottom,
-  smartScroll,
+  jumpToBottom,
+  positionChat,
   saveScrollPosition,
-  scrollPositionsAtom
+  scrollPositionsAtom,
+  setScrollPosition
 } from "./utils/scrollUtils";
 import { observeMessages } from "./utils/intersectionUtils";
 import useMessageHandlers from "./useMessageHandlers";
@@ -31,7 +32,8 @@ const useChatWindow = (initialUsername) => {
   const [newMessagesCount, setNewMessagesCount] = useState(0);
   const [selectedMessages, setSelectedMessages] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const initialScrollDone = useRef(false);
+  const initialPositionSet = useRef(false);
+  const messagesRef = useRef([]);
 
   const {
     handleSendMessage,
@@ -54,13 +56,25 @@ const useChatWindow = (initialUsername) => {
     setMessages,
   });
 
+  // Custom message send handler to handle instant scrolling
+  const sendMessage = async (...args) => {
+    const result = await handleSendMessage(...args);
+    
+    // After sending, instantly jump to bottom
+    setTimeout(() => {
+      jumpToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom);
+    }, 50);
+    
+    return result;
+  };
+
   // Save scroll position when changing chats
   const handleSetActiveChat = (chatId) => {
     if (activeChat) {
       saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
     }
     setActiveChat(chatId);
-    initialScrollDone.current = false;
+    initialPositionSet.current = false;
   };
   
   useEffect(() => {
@@ -70,17 +84,20 @@ const useChatWindow = (initialUsername) => {
 
   useEffect(() => {
     if (!activeChat) return;
-    const unsubscribe = fetchMessages(db, activeChat, setMessages);
+    const unsubscribe = fetchMessages(db, activeChat, (newMessages) => {
+      setMessages(newMessages);
+      messagesRef.current = newMessages;
+    });
     return () => unsubscribe();
   }, [activeChat]);
 
-  // Handle initial scroll positioning when messages load
+  // Handle positioning without animation when messages load
   useEffect(() => {
-    if (!activeChat || !messages.length || !scrollAreaRef.current || initialScrollDone.current) return;
+    if (!activeChat || !messages.length || !scrollAreaRef.current || initialPositionSet.current) return;
     
-    // Slight delay to ensure DOM is updated
+    // Small timeout to ensure DOM is updated
     setTimeout(() => {
-      smartScroll(
+      positionChat(
         scrollAreaRef, 
         activeChat, 
         messages, 
@@ -89,8 +106,8 @@ const useChatWindow = (initialUsername) => {
         setIsAtBottom, 
         setNewMessagesCount
       );
-      initialScrollDone.current = true;
-    }, 100);
+      initialPositionSet.current = true;
+    }, 50);
   }, [messages, activeChat, user, scrollPositions]);
 
   useEffect(() => {
@@ -115,7 +132,7 @@ const useChatWindow = (initialUsername) => {
 
   useEffect(() => {
     hasMarkedRead.current = false;
-    initialScrollDone.current = false;
+    initialPositionSet.current = false;
   }, [activeChat]);
 
   // Group messages by date
@@ -158,29 +175,32 @@ const useChatWindow = (initialUsername) => {
     return () => scrollElement.removeEventListener("scroll", handleScroll);
   }, [activeChat, messages]);
 
-  // Handle incoming messages
+  // Handle incoming messages without animation
   useEffect(() => {
-    if (!messages.length || !scrollAreaRef.current) return;
+    if (!messages.length || !scrollAreaRef.current || !initialPositionSet.current) return;
     
     const lastMessage = messages[messages.length - 1];
-    const isLastMessageFromUser = lastMessage?.sender === user.uid;
-    const newCount = messages.length - previousMessagesLength.current;
-    const hasNewMessages = newCount > 0;
+    const previousLength = previousMessagesLength.current;
+    const currentLength = messages.length;
     
-    // Update previous messages length
-    previousMessagesLength.current = messages.length;
-    
-    // If we're already at the bottom or the message is from current user
-    if (isAtBottom || isLastMessageFromUser) {
-      // Auto-scroll to bottom with new messages
-      scrollToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom, "smooth");
-      setNewMessagesCount(0);
-    } 
-    // If new messages arrived and we're not at bottom
-    else if (hasNewMessages && !isLastMessageFromUser) {
-      setNewMessagesCount((prev) => prev + newCount);
+    // Only process if we have new messages
+    if (currentLength > previousLength) {
+      const isLastMessageFromUser = lastMessage?.sender === user.uid;
+      const newCount = currentLength - previousLength;
+      
+      previousMessagesLength.current = currentLength;
+      
+      // If we're at the bottom or the message is from current user
+      if (isAtBottom || isLastMessageFromUser) {
+        // Directly jump to bottom without animation
+        jumpToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom);
+      } 
+      // Otherwise just update the new message count
+      else {
+        setNewMessagesCount((prev) => prev + newCount);
+      }
     }
-  }, [messages, user.uid, activeChat, isAtBottom]);
+  }, [messages, user?.uid, isAtBottom]);
 
   // Clean up function to save scroll position when unmounting
   useEffect(() => {
@@ -196,19 +216,13 @@ const useChatWindow = (initialUsername) => {
     activeChat,
     setActiveChat: handleSetActiveChat,
     messages,
-    sendMessage: handleSendMessage,
+    sendMessage,
     setNewMessage,
     newMessage,
     scrollAreaRef,
     isLoading: !activeChat || !messages,
     newMessagesCount,
-    scrollToBottom: (behavior) =>
-      scrollToBottom(
-        scrollAreaRef,
-        setNewMessagesCount,
-        setIsAtBottom,
-        behavior
-      ),
+    scrollToBottom: () => jumpToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom),
     groupedMessages,
     formatMessageTime,
     user,
