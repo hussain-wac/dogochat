@@ -97,5 +97,4 @@ function SearchBar({ setActiveChat }) {
     </div>
   );
 }
-
 export default SearchBar;

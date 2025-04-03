@@ -1,7 +1,7 @@
 // ChatList.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
@@ -13,7 +13,6 @@ import {
   MessageCircleIcon,
   MoreVertical,
   Trash,
-  Search,
   UserPlus,
 } from "lucide-react";
 import useChatList from "../../hooks/useChatlist";
@@ -35,25 +34,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useFirebasePresence } from "../../hooks/useFirebasePresence"; // Adjust the import path
 
-function ChatList({ setActiveChat }) {
-  const { chatList, isLoading, deleteChat } = useChatList();
-  const setChatdet = useSetAtom(chatdetails);
-  const [open, setOpen] = useState(false);
-  const [chatToDelete, setChatToDelete] = useState(null);
-  const navigate = useNavigate();
-
-  const confirmDelete = (refid, e) => {
-    e.stopPropagation();
-    setChatToDelete(refid);
-    setOpen(true);
-  };
-
-  const handleChatSelect = (refid, name, profilePic) => {
-    setActiveChat(refid, name);
-    setChatdet({ chatname: name, profilePic });
-    navigate(`/home/${name}`);
-  };
+// ChatItem component
+function ChatItem({ chat, onSelect, onDelete }) {
+  const { isOnline } = useFirebasePresence(chat.name);
 
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "";
@@ -96,6 +81,105 @@ function ChatList({ setActiveChat }) {
   };
 
   return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            onClick={() => onSelect(chat.refid, chat.name, chat.profilePic)}
+            className="p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer flex items-center space-x-3 transition-colors"
+          >
+            <div className="relative flex-shrink-0">
+              {chat.profilePic ? (
+                <img
+                  src={chat.profilePic}
+                  alt={chat.name}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-orange-200 dark:border-orange-800 shadow-sm"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-sm text-white font-medium">
+                  {getInitials(chat.name)}
+                </div>
+              )}
+              {isOnline && (
+                <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white dark:border-neutral-900" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <div className="font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                  {chat.name}
+                </div>
+                {chat.lastMessage && (
+                  <span className="text-xs text-neutral-500 ml-2 whitespace-nowrap">
+                    {formatTimestamp(chat.lastMessage.timestamp)}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate pr-2">
+                  {chat.lastMessage?.text?.length > 30
+                    ? chat.lastMessage.text.substring(0, 30) + "..."
+                    : chat.lastMessage?.text || "No messages yet"}
+                </p>
+                {chat.unreadCount > 0 && (
+                  <Badge className="ml-2 bg-orange-500 hover:bg-orange-500 rounded-full h-5 min-w-5 flex items-center justify-center px-1.5 text-xs">
+                    {chat.unreadCount}
+                  </Badge>
+                )}
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <button className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors flex-shrink-0">
+                  <MoreVertical className="w-5 h-5 text-neutral-500" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-40 shadow-lg border border-neutral-200 dark:border-neutral-700"
+              >
+                <DropdownMenuItem
+                  className="text-red-500 hover:text-red-600 dark:hover:text-red-400 flex items-center cursor-pointer px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  onClick={(e) => onDelete(chat.refid, e)}
+                >
+                  <Trash className="w-4 h-4 mr-2" />
+                  Delete Chat
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent
+          side="right"
+          className="bg-neutral-800 text-white border-none px-2 py-1 text-sm shadow-md"
+        >
+          Chat with {chat.name}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+function ChatList({ setActiveChat }) {
+  const { chatList, isLoading, deleteChat } = useChatList();
+  const setChatdet = useSetAtom(chatdetails);
+  const [open, setOpen] = useState(false);
+  const [chatToDelete, setChatToDelete] = useState(null);
+  const navigate = useNavigate();
+
+  const confirmDelete = (refid, e) => {
+    e.stopPropagation();
+    setChatToDelete(refid);
+    setOpen(true);
+  };
+
+  const handleChatSelect = (refid, name, profilePic) => {
+    setActiveChat(refid, name);
+    setChatdet({ chatname: name, profilePic });
+    navigate(`/home/${name}`);
+  };
+
+  return (
     <div className="flex flex-col h-full bg-white dark:bg-neutral-900">
       <Card className="flex flex-col h-full border-none shadow-none">
         <CardContent className="p-0 flex-1 min-h-0">
@@ -115,93 +199,12 @@ function ChatList({ setActiveChat }) {
             ) : chatList.length > 0 ? (
               <div className="divide-y dark:divide-neutral-800">
                 {chatList.map((chat) => (
-                  <TooltipProvider key={chat.refid}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          onClick={() =>
-                            handleChatSelect(
-                              chat.refid,
-                              chat.name,
-                              chat.profilePic
-                            )
-                          }
-                          className="p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer flex items-center space-x-3 transition-colors"
-                        >
-                          <div className="relative flex-shrink-0">
-                            {chat.profilePic ? (
-                              <img
-                                src={chat.profilePic}
-                                alt={chat.name}
-                                className="w-12 h-12 rounded-full object-cover border-2 border-orange-200 dark:border-orange-800 shadow-sm"
-                              />
-                            ) : (
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-sm text-white font-medium">
-                                {getInitials(chat.name)}
-                              </div>
-                            )}
-                            {chat.isOnline && (
-                              <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white dark:border-neutral-900" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <div className="font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-                                {chat.name}
-                              </div>
-                              {chat.lastMessage && (
-                                <span className="text-xs text-neutral-500 ml-2 whitespace-nowrap">
-                                  {formatTimestamp(chat.lastMessage.timestamp)}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center justify-between mt-1">
-                              <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate pr-2">
-                                {chat.lastMessage?.text?.length > 30
-                                  ? chat.lastMessage.text.substring(0, 30) +
-                                    "..."
-                                  : chat.lastMessage?.text || "No messages yet"}
-                              </p>
-
-                              {chat.unreadCount > 0 && (
-                                <Badge className="ml-2 bg-orange-500 hover:bg-orange-500 rounded-full h-5 min-w-5 flex items-center justify-center px-1.5 text-xs">
-                                  {chat.unreadCount}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              asChild
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <button className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors flex-shrink-0">
-                                <MoreVertical className="w-5 h-5 text-neutral-500" />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="end"
-                              className="w-40 shadow-lg border border-neutral-200 dark:border-neutral-700"
-                            >
-                              <DropdownMenuItem
-                                className="text-red-500 hover:text-red-600 dark:hover:text-red-400 flex items-center cursor-pointer px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                                onClick={(e) => confirmDelete(chat.refid, e)}
-                              >
-                                <Trash className="w-4 h-4 mr-2" />
-                                Delete Chat
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="right"
-                        className="bg-neutral-800 text-white border-none px-2 py-1 text-sm shadow-md"
-                      >
-                        Chat with {chat.name}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <ChatItem
+                    key={chat.refid}
+                    chat={chat}
+                    onSelect={handleChatSelect}
+                    onDelete={confirmDelete}
+                  />
                 ))}
               </div>
             ) : (
