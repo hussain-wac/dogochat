@@ -44,8 +44,6 @@ const useChatWindow = (initialUsername) => {
     setIsSelectionMode,
     setMessages,
   });
-
-  // Fetch chat ID based on the initialUsername and user
   useEffect(() => {
     if (!initialUsername || !user) return;
     fetchChatId(db, user, initialUsername, setActiveChat);
@@ -92,7 +90,8 @@ const useChatWindow = (initialUsername) => {
     }, {});
   }, [messages]);
 
-  // Intersection observer for read receipts
+
+
   useEffect(() => {
     if (!scrollAreaRef.current || !messages.length || !activeChat) return;
     if (observerRef.current) observerRef.current.disconnect();
@@ -174,5 +173,4 @@ const useChatWindow = (initialUsername) => {
     toggleSelectionMode,
   };
 };
-
 export default useChatWindow;
