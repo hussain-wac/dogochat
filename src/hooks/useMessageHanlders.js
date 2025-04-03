@@ -56,8 +56,6 @@ const useMessageHandlers = ({
     if (selectedMessages.length === 0 || !activeChat) return;
     try {
       await deleteMessages(db, activeChat, selectedMessages);
-      // Since fetchMessages updates the state in real-time,
-      // we don't need to manually filter messages here
       setSelectedMessages([]);
       setIsSelectionMode(false);
     } catch (error) {
