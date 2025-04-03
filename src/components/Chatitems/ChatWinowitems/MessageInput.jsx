@@ -1,3 +1,4 @@
+// components/MessageInput.js
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,13 +14,31 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import EmojiPicker from "emoji-picker-react";
-import useEmojipic from "../../../hooks/useImoji"; 
+import useEmojipic from "../../../hooks/useImoji";
+import useTypingStatus from "../../../hooks/useTypingStatus";
 
-const MessageInput = ({ newMessage, setNewMessage, sendMessage }) => {
+const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
   const { showEmojiPicker, setShowEmojiPicker, handleEmojiClick } = useEmojipic(setNewMessage);
+  const { handleTyping, typingUsersNames, typingUsersCount } = useTypingStatus(chatId);
 
   return (
     <div className="p-3 border-t dark:border-neutral-700 bg-white dark:bg-neutral-900 shrink-0">
+      {/* Typing Indicator */}
+      {typingUsersCount > 0 && (
+        <div className="text-sm text-neutral-500 mb-2 max-w-3xl mx-auto flex items-center space-x-2">
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
+            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+          </div>
+          <span>
+            {typingUsersCount === 1 
+              ? `${typingUsersNames} is typing...`
+              : `${typingUsersNames} are typing...`}
+          </span>
+        </div>
+      )}
+
       <div className="flex items-center space-x-2 max-w-3xl mx-auto">
         <div className="flex space-x-1">
           <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
@@ -57,7 +76,10 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage }) => {
         <Input
           placeholder="Type a message..."
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={(e) => {
+            setNewMessage(e.target.value);
+            handleTyping(e.target.value);
+          }}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           className="flex-1 rounded-full py-5 bg-white text-black dark:text-neutral-50 dark:bg-black border-neutral-200 dark:border-neutral-700 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm"
         />

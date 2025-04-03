@@ -32,7 +32,6 @@ function ChatWindow({ initialUsername, onBackClick }) {
     toggleSelectionMode,
   } = useChatWindow(initialUsername);
   const presence = useFirebasePresence(initialUsername);
-
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
 
@@ -104,6 +103,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
             toggleMessageSelection={toggleMessageSelection}
             handleDeleteMessages={handleDeleteMessages}
             isSelectionMode={isSelectionMode}
+            chatId={activeChat} // Pass activeChat as chatId
           />
           <NewMessagesBadge
             newMessagesCount={newMessagesCount}
@@ -113,7 +113,8 @@ function ChatWindow({ initialUsername, onBackClick }) {
             newMessage={newMessage}
             setNewMessage={setNewMessage}
             sendMessage={sendMessage}
-            isMobile={isMobile}
+            chatId={activeChat} // Pass activeChat as chatId
+            isMobile={isMobile} // Pass isMobile if needed in MessageInput
           />
         </CardContent>
       </Card>
