@@ -1,4 +1,3 @@
-// useMessageHandlers.js
 import { useAtomValue } from "jotai";
 import { globalState } from "../jotai/globalState";
 import {
@@ -6,7 +5,7 @@ import {
   markMessageAsRead,
   deleteMessages,
 } from "./utils/chatOperations";
-import { scrollToBottom } from "./utils/scrollUtils";
+import { jumpToBottom } from "./utils/scrollUtils";
 
 const useMessageHandlers = ({
   db,
@@ -23,14 +22,14 @@ const useMessageHandlers = ({
   const currentUser = useAtomValue(globalState);
 
   const handleSendMessage = () => {
-     if (!newMessage || newMessage.trim() === "") return;
-    if (!newMessage.trim() || !activeChat || !currentUser?.uid) return;
-    sendMessage(db, activeChat, newMessage, currentUser.uid, (behavior) =>
-      scrollToBottom(
+    if (!newMessage || newMessage.trim() === "") return;
+    if (!activeChat || !currentUser?.uid) return;
+    
+    sendMessage(db, activeChat, newMessage, currentUser.uid, () => 
+      jumpToBottom(
         scrollAreaRef,
         setNewMessagesCount,
-        setIsAtBottom,
-        behavior
+        setIsAtBottom
       )
     );
     setNewMessage("");

@@ -1,10 +1,14 @@
 import { atom } from "jotai";
+
+// Store scroll positions for each chat
 export const scrollPositionsAtom = atom({});
+
 export const getScrollElement = (scrollAreaRef) => {
   return (
     scrollAreaRef.current?.querySelector("[data-radix-scroll-area-viewport]") || null
   );
 };
+
 export const checkIsAtBottom = (scrollAreaRef) => {
   const scrollElement = getScrollElement(scrollAreaRef);
   if (scrollElement) {
@@ -14,35 +18,47 @@ export const checkIsAtBottom = (scrollAreaRef) => {
   return true;
 };
 
-export const scrollToBottom = (scrollAreaRef, setNewMessagesCount, setIsAtBottom, behavior = "smooth") => {
+// Set scroll position directly without animation
+export const setScrollPosition = (scrollAreaRef, position) => {
   const scrollElement = getScrollElement(scrollAreaRef);
   if (scrollElement) {
-    scrollElement.scrollTo({
-      top: scrollElement.scrollHeight,
-      behavior,
-    });
-    setTimeout(() => {
-      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-      if (scrollTop + clientHeight >= scrollHeight - 10) {
-        setNewMessagesCount(0);
-        setIsAtBottom(true);
-      }
-    }, 300);
+    // Direct assignment without scrollTo to avoid any animation
+    scrollElement.scrollTop = position;
   }
 };
-export const scrollToMessage = (scrollAreaRef, messageId, setIsAtBottom, behavior = "smooth") => {
+
+// Directly jump to bottom without animation
+export const jumpToBottom = (scrollAreaRef, setNewMessagesCount, setIsAtBottom) => {
+  const scrollElement = getScrollElement(scrollAreaRef);
+  if (scrollElement) {
+    // Direct assignment without scrollTo
+    scrollElement.scrollTop = scrollElement.scrollHeight;
+    setNewMessagesCount(0);
+    setIsAtBottom(true);
+  }
+};
+
+// Directly jump to specific message without animation
+export const jumpToMessage = (scrollAreaRef, messageId, setIsAtBottom) => {
   const scrollElement = getScrollElement(scrollAreaRef);
   if (scrollElement) {
     const messageElement = scrollElement.querySelector(`[data-message-id="${messageId}"]`);
     if (messageElement) {
-      messageElement.scrollIntoView({ 
-        behavior, 
-        block: 'center' 
-      });
-      setTimeout(() => {
-        const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-        setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
-      }, 300);
+      // Calculate position to center the message
+      const messageRect = messageElement.getBoundingClientRect();
+      const containerRect = scrollElement.getBoundingClientRect();
+      const centerOffset = (containerRect.height - messageRect.height) / 2;
+      const targetScrollTop = scrollElement.scrollTop + 
+                              messageElement.offsetTop - 
+                              scrollElement.offsetTop - 
+                              centerOffset;
+      
+      // Set position directly
+      scrollElement.scrollTop = targetScrollTop;
+      
+      // Update state
+      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+      setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
     }
   }
 };
@@ -58,8 +74,8 @@ export const saveScrollPosition = (scrollAreaRef, chatId, set) => {
   }
 };
 
-// Restore scroll position or smart scroll to unread/latest
-export const smartScroll = (scrollAreaRef, chatId, messages, user, scrollPositions, setIsAtBottom, setNewMessagesCount) => {
+// Position the chat window without animation based on context
+export const positionChat = (scrollAreaRef, chatId, messages, user, scrollPositions, setIsAtBottom, setNewMessagesCount) => {
   const scrollElement = getScrollElement(scrollAreaRef);
   if (!scrollElement || !messages.length) return;
 
@@ -67,14 +83,12 @@ export const smartScroll = (scrollAreaRef, chatId, messages, user, scrollPositio
   const savedPosition = scrollPositions[chatId];
   
   if (savedPosition !== undefined) {
-    // If we have a saved position, restore it
+    // Direct assignment without animation
     scrollElement.scrollTop = savedPosition;
     
-    // Check if we're at bottom after restoring
-    setTimeout(() => {
-      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-      setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
-    }, 100);
+    // Check if we're at bottom after positioning
+    const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+    setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
     return;
   }
 
@@ -84,18 +98,20 @@ export const smartScroll = (scrollAreaRef, chatId, messages, user, scrollPositio
   );
 
   if (firstUnreadIndex > -1) {
-    // Scroll to first unread message
+    // Get message element
     const messageId = messages[firstUnreadIndex].id;
     const messageElement = scrollElement.querySelector(`[data-message-id="${messageId}"]`);
     
     if (messageElement) {
-      messageElement.scrollIntoView({
-        behavior: "auto",
-        block: 'center'
-      });
+      // Calculate position to place message in view
+      const containerHeight = scrollElement.clientHeight;
+      const targetPosition = messageElement.offsetTop - (containerHeight / 3);
+      
+      // Set position directly
+      scrollElement.scrollTop = targetPosition;
     }
   } else {
-    // If no unread messages, scroll to bottom
+    // If no unread messages, position at bottom
     scrollElement.scrollTop = scrollElement.scrollHeight;
     setIsAtBottom(true);
     setNewMessagesCount(0);
