@@ -1,6 +1,6 @@
 // useChatWindow.js
 import { useState, useRef, useEffect, useMemo } from "react";
-import { chatdetails, globalState } from "../jotai/globalState";
+import {  globalState } from "../jotai/globalState";
 import { useAtomValue } from "jotai";
 import { fetchMessages } from "./utils/messageFetch";
 import { formatMessageTime } from "./utils/timeFormat";
@@ -15,7 +15,7 @@ import useMessageHandlers from "./useMessageHandlers";
 import { db } from "../firebase";
 const useChatWindow = (initialUsername) => {
   const user = useAtomValue(globalState);
-  const chatdet = useAtomValue(chatdetails);
+ 
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -159,7 +159,6 @@ const useChatWindow = (initialUsername) => {
     newMessage,
     scrollAreaRef,
     isLoading: !activeChat || !messages,
-    chatdet,
     newMessagesCount,
     scrollToBottom: (behavior) =>
       scrollToBottom(

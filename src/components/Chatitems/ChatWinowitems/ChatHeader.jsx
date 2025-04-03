@@ -1,4 +1,5 @@
 import React from "react";
+import { useParams } from "react-router-dom";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageCircleIcon, MoreVerticalIcon } from "lucide-react";
 import {
@@ -8,33 +9,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import useTypingStatus from "../../../hooks/useTypingStatus";
+import { useChatUser } from "../../../hooks/useChatUser";
 
-const ChatHeader = ({
-  chatdet,
-  username,
-  isOpponentOnline,
-  lastOnline,
-  toggleSelectionMode,
-  isSelectionMode,
-  chatId,
-}) => {
+const ChatHeader = ({ isOpponentOnline, lastOnline, toggleSelectionMode, isSelectionMode }) => {
+  const { username } = useParams(); // Extract username from URL
+  const chatUser = useChatUser(username); // Use custom hook
+
   const formatLastSeen = (timestamp) => {
     if (!timestamp) return "Last seen: Unknown";
     const date = new Date(timestamp);
     return `Last seen: ${date.toLocaleString()}`;
   };
 
-  // Get typing status information
-  const { typingUsersCount, typingUsersNames } = useTypingStatus(chatId);
+  const { typingUsersCount, typingUsersNames } = useTypingStatus(username);
   const isTyping = typingUsersCount > 0;
 
   return (
     <CardHeader className="border-b dark:border-neutral-700 h-16 min-h-[4rem] sticky top-0 z-10 bg-white dark:bg-neutral-900 px-4 py-3 shadow-sm flex items-center justify-between">
       <div className="flex items-center space-x-3">
-        {chatdet.profilePic ? (
+        {chatUser?.photoURL ? (
           <img
-            src={chatdet.profilePic}
-            alt={chatdet.chatname}
+            src={chatUser.photoURL}
+            alt={chatUser.username}
             className="w-10 h-10 rounded-full object-cover border-2 border-orange-200 dark:border-orange-800 shadow-sm"
           />
         ) : (
@@ -44,7 +40,7 @@ const ChatHeader = ({
         )}
         <div className="flex flex-col min-w-0">
           <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-100 truncate">
-            {chatdet.chatname || username}
+            {chatUser?.username || "User"}
           </CardTitle>
           <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
             {isTyping ? (
@@ -65,6 +61,9 @@ const ChatHeader = ({
               formatLastSeen(lastOnline)
             )}
           </span>
+          {chatUser?.email && (
+            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{chatUser.email}</span>
+          )}
         </div>
       </div>
       <DropdownMenu>

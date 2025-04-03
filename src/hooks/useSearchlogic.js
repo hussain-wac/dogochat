@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
 import { db } from "../firebase";
 import { useSWRConfig } from "swr";
-import { chatdetails, globalState } from "../jotai/globalState";
-import { useAtomValue, useSetAtom } from "jotai";
+import {  globalState } from "../jotai/globalState";
+import { useAtomValue } from "jotai";
 import { useSearchUsers } from "../hooks/useSearchUsers";
 import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,6 @@ const useSearchlogic = ({ setActiveChat }) => {
   const { mutate } = useSWRConfig();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const setdet = useSetAtom(chatdetails);
   const { users, isLoading } = useSearchUsers(debouncedSearch);
   const navigate = useNavigate();
   const timeoutRef = useRef(null);
@@ -102,11 +101,6 @@ const useSearchlogic = ({ setActiveChat }) => {
       mutate(`chatList-${user.uid}`);
 
       setActiveChat(chatId, selectedUsername);
-      setdet({
-        chatname: selectedUsername,
-        profilePic: selectedUser.photoURL,
-      });
-
       navigate(`/home/${selectedUsername}`);
 
       setSearch("");
@@ -119,7 +113,7 @@ const useSearchlogic = ({ setActiveChat }) => {
   return {
     users,
     isLoading,
-    setdet,
+    
     setSearch: handleSearchChange,
     startChat,
     search,

@@ -9,15 +9,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  MessageCircleIcon,
-  MoreVertical,
-  Trash,
-  UserPlus,
-} from "lucide-react";
+import { MessageCircleIcon, MoreVertical, Trash, UserPlus } from "lucide-react";
 import useChatList from "../../hooks/useChatlist";
-import { useSetAtom } from "jotai";
-import { chatdetails } from "../../jotai/globalState";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -34,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useFirebasePresence } from "../../hooks/useFirebasePresence"; // Adjust the import path
+import { useFirebasePresence } from "../../hooks/useFirebasePresence"; 
 
 // ChatItem component
 function ChatItem({ chat, onSelect, onDelete }) {
@@ -162,7 +155,7 @@ function ChatItem({ chat, onSelect, onDelete }) {
 
 function ChatList({ setActiveChat }) {
   const { chatList, isLoading, deleteChat } = useChatList();
-  const setChatdet = useSetAtom(chatdetails);
+
   const [open, setOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
   const navigate = useNavigate();
@@ -173,9 +166,8 @@ function ChatList({ setActiveChat }) {
     setOpen(true);
   };
 
-  const handleChatSelect = (refid, name, profilePic) => {
+  const handleChatSelect = (refid, name) => {
     setActiveChat(refid, name);
-    setChatdet({ chatname: name, profilePic });
     navigate(`/home/${name}`);
   };
 

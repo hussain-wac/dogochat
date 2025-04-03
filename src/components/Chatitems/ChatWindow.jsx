@@ -19,7 +19,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
     newMessage,
     scrollAreaRef,
     isLoading,
-    chatdet,
+
     newMessagesCount,
     scrollToBottom,
     groupedMessages,
@@ -83,7 +83,6 @@ function ChatWindow({ initialUsername, onBackClick }) {
     <div className="flex flex-col h-full bg-neutral-100 dark:bg-neutral-neutral">
       <Card className="flex flex-col h-full rounded-none border-none shadow-none overflow-hidden">
         <ChatHeader
-          chatdet={chatdet}
           username={username}
           isOpponentOnline={presence.isOnline}
           lastOnline={presence.lastSeen}
@@ -104,7 +103,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
             toggleMessageSelection={toggleMessageSelection}
             handleDeleteMessages={handleDeleteMessages}
             isSelectionMode={isSelectionMode}
-            chatId={activeChat} // Pass activeChat as chatId
+            chatId={activeChat} 
           />
           <NewMessagesBadge
             newMessagesCount={newMessagesCount}
@@ -114,8 +113,8 @@ function ChatWindow({ initialUsername, onBackClick }) {
             newMessage={newMessage}
             setNewMessage={setNewMessage}
             sendMessage={sendMessage}
-            chatId={activeChat} // Pass activeChat as chatId
-            isMobile={isMobile} // Pass isMobile if needed in MessageInput
+            chatId={activeChat} 
+            isMobile={isMobile} 
           />
         </CardContent>
       </Card>
