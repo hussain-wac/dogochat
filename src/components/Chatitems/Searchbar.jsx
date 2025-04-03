@@ -1,4 +1,3 @@
-// SearchBar.jsx
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,43 +49,48 @@ function SearchBar({ setActiveChat }) {
         </div>
       )}
 
-      {users.length > 0 && !isLoading && (
+      {/* Render Command component when not loading, regardless of users.length */}
+      {!isLoading && search.length >= 3 && (
         <Command className="mt-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-md max-w-2xl mx-auto">
           <CommandList className="max-h-[300px]">
-            <CommandEmpty className="py-6 text-center text-neutral-500 dark:text-neutral-400">No users found</CommandEmpty>
-            <CommandGroup>
-              {users.map((user) => (
-                <CommandItem
-                  key={user.id}
-                  className="flex items-center justify-between p-3 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-800 last:border-0"
-                >
-                  <div className="flex items-center space-x-3">
-                    {user.profilePic ? (
-                      <img 
-                        src={user.profilePic} 
-                        alt={user.username} 
-                        className="w-8 h-8 rounded-full object-cover border border-neutral-200 dark:border-neutral-700"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white font-medium">
-                        {user.username.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <span className="font-medium text-neutral-800 dark:text-neutral-200 truncate">
-                      {user.username}
-                    </span>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => startChat(user)}
-                    className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-3 py-1 text-sm shadow-sm"
+            <CommandEmpty className="py-6 text-center text-neutral-500 dark:text-neutral-400">
+              No users found
+            </CommandEmpty>
+            {users.length > 0 && (
+              <CommandGroup>
+                {users.map((user) => (
+                  <CommandItem
+                    key={user.id}
+                    className="flex items-center justify-between p-3 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-800 last:border-0"
                   >
-                    <UserPlusIcon className="h-4 w-4 mr-1" />
-                    Chat
-                  </Button>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+                    <div className="flex items-center space-x-3">
+                      {user.profilePic ? (
+                        <img 
+                          src={user.profilePic} 
+                          alt={user.username} 
+                          className="w-8 h-8 rounded-full object-cover border border-neutral-200 dark:border-neutral-700"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white font-medium">
+                          {user.username.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="font-medium text-neutral-800 dark:text-neutral-200 truncate">
+                        {user.username}
+                      </span>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => startChat(user)}
+                      className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-3 py-1 text-sm shadow-sm"
+                    >
+                      <UserPlusIcon className="h-4 w-4 mr-1" />
+                      Chat
+                    </Button>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
           </CommandList>
         </Command>
       )}
