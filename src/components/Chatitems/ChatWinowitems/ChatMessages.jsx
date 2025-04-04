@@ -19,69 +19,73 @@ const ChatMessages = ({
   const { typingUsersCount, typingUsersNames } = useTypingStatus(chatId);
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
-      <ScrollArea
-        ref={scrollAreaRef}
-        className="flex-1 px-4 py-2"
-        style={{ overflowY: "auto" }}
-      >
-        <div className="space-y-4 pb-6">
-          {isLoading ? (
-            [...Array(5)].map((_, index) => (
-              <div
-                key={index}
-                className={`flex ${index % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}
-              >
-                <div className="flex flex-col max-w-[70%]">
-                  <Skeleton
-                    className={`h-12 ${index % 2 === 0 ? "w-64" : "w-48"} rounded-xl`}
-                  />
-                  <Skeleton className="h-3 w-16 mt-1 ml-auto" />
+    <div className="flex flex-col flex-1 h-screen">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-2 max-h-[75vh]">
+        <div className="space-y-4 pb-6 ">
+          {isLoading
+            ? [...Array(5)].map((_, index) => (
+                <div
+                  key={index}
+                  className={`flex ${
+                    index % 2 === 0 ? "justify-start" : "justify-end"
+                  } mb-4`}
+                >
+                  <div className="flex flex-col max-w-[70%]">
+                    <Skeleton
+                      className={`h-12 ${
+                        index % 2 === 0 ? "w-64" : "w-48"
+                      } rounded-xl`}
+                    />
+                    <Skeleton className="h-3 w-16 mt-1 ml-auto" />
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            Object.entries(groupedMessages).map(([date, dayMessages]) => (
-              <div key={date} className="space-y-3">
-                <div className="text-center my-4 relative">
-                  <span className="bg-white dark:bg-neutral-900 px-3 py-1 rounded-full text-xs font-medium text-neutral-500 uppercase tracking-wide shadow-sm">
-                    {date === new Date().toDateString()
-                      ? "Today"
-                      : date === new Date(Date.now() - 86400000).toDateString()
-                      ? "Yesterday"
-                      : new Date(date).toLocaleDateString(undefined, {
-                          weekday: "long",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                  </span>
-                  <div className="absolute left-0 right-0 top-1/2 border-t border-neutral-200 dark:border-neutral-700 -z-10" />
-                </div>
-                {dayMessages.map((msg) => {
-                  const isSender = msg.sender === user.uid;
-                  return (
-                    <div
-                      key={msg.id}
-                      data-message-id={msg.id}
-                      className={`flex ${isSender ? "justify-end" : "justify-start"} mb-3 group`}
-                    >
-                      {isSelectionMode && isSender && (
-                        <div className="self-end mr-2">
-                          <input
-                            type="checkbox"
-                            checked={selectedMessages.includes(msg.id)}
-                            onChange={() => toggleMessageSelection(msg.id)}
-                            className="h-4 w-4 rounded border-neutral-300 text-orange-500 focus:ring-orange-500"
-                          />
-                        </div>
-                      )}
+              ))
+            : Object.entries(groupedMessages).map(([date, dayMessages]) => (
+                <div key={date} className="space-y-3">
+                  <div className="text-center my-4 relative">
+                    <span className="bg-white dark:bg-neutral-900 px-3 py-1 rounded-full text-xs font-medium text-neutral-500 uppercase tracking-wide shadow-sm">
+                      {date === new Date().toDateString()
+                        ? "Today"
+                        : date ===
+                          new Date(Date.now() - 86400000).toDateString()
+                        ? "Yesterday"
+                        : new Date(date).toLocaleDateString(undefined, {
+                            weekday: "long",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                    </span>
+                    <div className="absolute left-0 right-0 top-1/2 border-t border-neutral-200 dark:border-neutral-700 -z-10" />
+                  </div>
+                  {dayMessages.map((msg) => {
+                    const isSender = msg.sender === user.uid;
+                    return (
                       <div
-                        className={`flex flex-col max-w-[70%] ${
-                          selectedMessages.includes(msg.id) ? "opacity-60" : ""
-                        }`}
+                        key={msg.id}
+                        data-message-id={msg.id}
+                        className={`flex ${
+                          isSender ? "justify-end" : "justify-start"
+                        } mb-3 group`}
                       >
+                        {isSelectionMode && isSender && (
+                          <div className="self-end mr-2">
+                            <input
+                              type="checkbox"
+                              checked={selectedMessages.includes(msg.id)}
+                              onChange={() => toggleMessageSelection(msg.id)}
+                              className="h-4 w-4 rounded border-neutral-300 text-orange-500 focus:ring-orange-500"
+                            />
+                          </div>
+                        )}
                         <div
-                          className={`
+                          className={`flex flex-col max-w-[70%] ${
+                            selectedMessages.includes(msg.id)
+                              ? "opacity-60"
+                              : ""
+                          }`}
+                        >
+                          <div
+                            className={`
                           p-3 rounded-2xl shadow-sm
                           ${
                             isSender
@@ -89,44 +93,42 @@ const ChatMessages = ({
                               : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-tl-none border border-neutral-200 dark:border-neutral-700"
                           }
                         `}
-                        >
-                          <div className="text-sm whitespace-pre-wrap break-words">
-                            {msg.text}
+                          >
+                            <div className="text-sm whitespace-pre-wrap break-words">
+                              {msg.text}
+                            </div>
+                          </div>
+                          <div
+                            className={`text-xs text-neutral-500 flex items-center space-x-1 mt-1 ${
+                              isSender ? "justify-end" : "justify-start"
+                            }`}
+                          >
+                            <span>{formatMessageTime(msg.timestamp)}</span>
+                            {isSender && (
+                              <>
+                                {msg.status === "read" ? (
+                                  <div className="flex space-x-0.5">
+                                    <CheckIcon className="h-3.5 w-3.5 text-orange-200" />
+                                    <CheckIcon className="h-3.5 w-3.5 text-orange-200 -ml-2" />
+                                  </div>
+                                ) : msg.status === "delivered" ? (
+                                  <div className="flex space-x-0.5">
+                                    <CheckIcon className="h-3.5 w-3.5 text-neutral-400" />
+                                    <CheckIcon className="h-3.5 w-3.5 text-neutral-400 -ml-2" />
+                                  </div>
+                                ) : (
+                                  <CheckIcon className="h-3.5 w-3.5 text-neutral-300" />
+                                )}
+                              </>
+                            )}
                           </div>
                         </div>
-                        <div
-                          className={`text-xs text-neutral-500 flex items-center space-x-1 mt-1 ${
-                            isSender ? "justify-end" : "justify-start"
-                          }`}
-                        >
-                          <span>{formatMessageTime(msg.timestamp)}</span>
-                          {isSender && (
-                            <>
-                              {msg.status === "read" ? (
-                                <div className="flex space-x-0.5">
-                                  <CheckIcon className="h-3.5 w-3.5 text-orange-200" />
-                                  <CheckIcon className="h-3.5 w-3.5 text-orange-200 -ml-2" />
-                                </div>
-                              ) : msg.status === "delivered" ? (
-                                <div className="flex space-x-0.5">
-                                  <CheckIcon className="h-3.5 w-3.5 text-neutral-400" />
-                                  <CheckIcon className="h-3.5 w-3.5 text-neutral-400 -ml-2" />
-                                </div>
-                              ) : (
-                                <CheckIcon className="h-3.5 w-3.5 text-neutral-300" />
-                              )}
-                            </>
-                          )}
-                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ))
-          )}
+                    );
+                  })}
+                </div>
+              ))}
 
-          {/* WhatsApp-style Typing Indicator as a message bubble */}
           {typingUsersCount > 0 && (
             <div className="flex justify-start mb-3">
               <div className="flex flex-col max-w-[70%]">
@@ -135,12 +137,21 @@ const ChatMessages = ({
                   <div className="absolute inset-0 overflow-hidden">
                     <div className="shimmer-effect"></div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3 relative z-10">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
-                      <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                      <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                      <div
+                        className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.4s" }}
+                      ></div>
                     </div>
                     <span className="text-sm text-neutral-600 dark:text-neutral-400">
                       {typingUsersCount === 1
@@ -150,7 +161,10 @@ const ChatMessages = ({
                   </div>
                 </div>
                 <div className="text-xs text-neutral-500 mt-1 ml-1">
-                  {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </div>
               </div>
             </div>
@@ -168,7 +182,7 @@ const ChatMessages = ({
             transform: translateX(100%);
           }
         }
-        
+
         .shimmer-effect {
           position: absolute;
           top: 0;
@@ -183,7 +197,7 @@ const ChatMessages = ({
           );
           animation: shimmer 2s infinite;
         }
-        
+
         :global(.dark) .shimmer-effect {
           background: linear-gradient(
             90deg,

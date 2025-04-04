@@ -97,6 +97,7 @@ function Home() {
             ) : null}
           </AnimatePresence>
           
+          {/* Default content when sidebar is hidden */}
           <div className="h-full">
             {selectedUsername && !showSidebar ? (
               <ChatWindow 
@@ -104,12 +105,35 @@ function Home() {
                 onBackClick={toggleSidebar}
                 isMobile={true}
               />
+            ) : !showSidebar ? (
+              <div className="flex flex-col items-center justify-center text-neutral-500 h-full space-y-4 p-8">
+                <img
+                  src="/meme2.png"
+                  alt="Dogochat Logo"
+                  className="w-40 h-40 filter drop-shadow-md"
+                />
+                <h2 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200 text-center">
+                  Welcome to Kabosu
+                </h2>
+                <p className="text-center max-w-md text-neutral-500 dark:text-neutral-400">
+                  Tap the menu to view your conversations or start a new chat
+                </p>
+                <Button 
+                  onClick={toggleSidebar}
+                  className="mt-4 bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6 py-2 shadow-md"
+                >
+                  <MessageCircleIcon className="h-5 w-5 mr-2" />
+                  Show Messages
+                </Button>
+              </div>
             ) : null}
           </div>
         </div>
       </div>
     );
   }
+
+  // Desktop view remains unchanged
   return (
     <div className="h-full flex bg-neutral-50 dark:bg-neutral-900">
       <ResizablePanelGroup direction="horizontal" className="flex-1">
