@@ -25,9 +25,9 @@ const NewMessagesBadge = ({ newMessagesCount, scrollToBottom }) => (
         >
           <span className="flex items-center">
             New Messages 
-            <span className="inline-flex items-center justify-center ml-2 w-5 h-5 bg-white text-orange-600 text-xs font-bold rounded-full">
-              {newMessagesCount}
-            </span>
+            {/* <span className="inline-flex items-center justify-center ml-2 w-5 h-5 bg-white text-orange-600 text-xs font-bold "> */}
+              {/* {newMessagesCount} */}
+            {/* </span> */}
           </span>
           <ChevronDownIcon className="h-4 w-4" />
         </Button>

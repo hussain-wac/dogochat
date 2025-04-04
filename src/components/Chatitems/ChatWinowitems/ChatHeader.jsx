@@ -11,18 +11,22 @@ import {
 import useTypingStatus from "../../../hooks/useTypingStatus";
 import { useChatUser } from "../../../hooks/useChatUser";
 
-const ChatHeader = ({ isOpponentOnline, lastOnline, toggleSelectionMode, isSelectionMode }) => {
+const ChatHeader = ({
+  isOpponentOnline,
+  lastOnline,
+  toggleSelectionMode,
+  isSelectionMode,
+  chatId,
+}) => {
   const { username } = useParams(); // Extract username from URL
-  const chatUser = useChatUser(username); // Use custom hook
-
+  const chatUser = useChatUser(username);
   const formatLastSeen = (timestamp) => {
     if (!timestamp) return "Last seen: Unknown";
     const date = new Date(timestamp);
     return `Last seen: ${date.toLocaleString()}`;
   };
 
-  const { typingUsersCount, typingUsersNames } = useTypingStatus(username);
-  const isTyping = typingUsersCount > 0;
+  const { typingUsersNames } = useTypingStatus(chatId);
 
   return (
     <CardHeader className="border-b dark:border-neutral-700 h-16 min-h-[4rem] sticky top-0 z-10 bg-white dark:bg-neutral-900 px-4 py-3 shadow-sm flex items-center justify-between">
@@ -43,14 +47,23 @@ const ChatHeader = ({ isOpponentOnline, lastOnline, toggleSelectionMode, isSelec
             {chatUser?.username || "User"}
           </CardTitle>
           <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
-            {isTyping ? (
+            {typingUsersNames ? (
               <span className="text-green-500 flex items-center">
                 <span className="flex space-x-1 mr-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-bounce" style={{ animationDelay: "0s" }}></span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-bounce" style={{ animationDelay: "0.2s" }}></span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-bounce" style={{ animationDelay: "0.4s" }}></span>
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-green-500 animate-bounce"
+                    style={{ animationDelay: "0s" }}
+                  ></span>
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-green-500 animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  ></span>
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-green-500 animate-bounce"
+                    style={{ animationDelay: "0.4s" }}
+                  ></span>
                 </span>
-                {typingUsersCount === 1 ? ` typing...` : `${typingUsersNames} are typing...`}
+                typing...
               </span>
             ) : isOpponentOnline ? (
               <span className="text-green-500 flex items-center">
@@ -62,7 +75,9 @@ const ChatHeader = ({ isOpponentOnline, lastOnline, toggleSelectionMode, isSelec
             )}
           </span>
           {chatUser?.email && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{chatUser.email}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              {chatUser.email}
+            </span>
           )}
         </div>
       </div>
@@ -72,8 +87,11 @@ const ChatHeader = ({ isOpponentOnline, lastOnline, toggleSelectionMode, isSelec
             <MoreVerticalIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48 shadow-lg border border-gray-200 dark:border-gray-700">
-          <DropdownMenuItem 
+        <DropdownMenuContent
+          align="end"
+          className="w-48 shadow-lg border border-gray-200 dark:border-gray-700"
+        >
+          <DropdownMenuItem
             onClick={toggleSelectionMode}
             className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
