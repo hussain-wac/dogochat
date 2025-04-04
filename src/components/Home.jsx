@@ -202,14 +202,18 @@ function Home() {
             <ChatWindow initialUsername={selectedUsername} />
           ) : (
             <div className="flex flex-col items-center justify-center text-neutral-500 h-full space-y-4 p-8">
-              <div className="w-24 h-24 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center animate-pulse">
-                <MessageCircleIcon className="h-12 w-12 text-orange-500" />
-              </div>
+              {/* <div className="w-24 h-24 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center animate-pulse"> */}
+              <img
+              src="/meme2.png"
+              alt="Dogochat Logo"
+              className="w-60 h-60 filter drop-shadow-md"
+            />
+                {/* <MessageCircleIcon className="h-12 w-12 text-orange-500" /> */}
+              {/* </div> */}
               <h2 className="text-2xl font-semibold text-neutral-800 dark:text-neutral-200 text-center">
                 Welcome to Kabosu
-
               </h2>
-              <p className="text-center max-w-md text-neutral-500 dark:text-neutral-400">
+              <p className="text-center max-w-md text-neutral-500 dark:text-neutral-400"> 
                 Select a conversation from the sidebar or start a new chat to begin messaging
               </p>
               <Button 

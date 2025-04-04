@@ -13,7 +13,7 @@ import {
 } from "react-router-dom";
 import Login from "./Login";
 import Home from "./components/Home";
-import ChatWindow from "./components/Chatitems/ChatWindow";
+import NotFound from "./components/NotFound"; // ⬅️ Import it
 import usePresence from "./hooks/usePresence";
 
 function App() {
@@ -40,6 +40,9 @@ function App() {
               <Route path="/home" element={<Home />} />
               <Route path="/home/:username" element={<Home />} />
             </Route>
+
+            {/* Wildcard Route for 404 - Keep this at the end */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
       </Provider>
