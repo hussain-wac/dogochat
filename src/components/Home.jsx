@@ -150,8 +150,6 @@ function Home() {
       </div>
     );
   }
-
-  // Desktop view remains unchanged
   return (
     <div className="h-full flex bg-neutral-50 dark:bg-neutral-900">
       <ResizablePanelGroup direction="horizontal" className="flex-1">
