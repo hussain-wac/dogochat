@@ -166,9 +166,6 @@ function Home() {
               Messages
             </h2>
             <div className="flex space-x-2">
-              <Button variant="ghost" size="icon" className="rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800">
-                <Search className="h-5 w-5 text-neutral-500" />
-              </Button>
               <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
                 <PopoverTrigger asChild>
                   <motion.div

@@ -1,5 +1,4 @@
-// ChatList.jsx
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { MessageCircleIcon, MoreVertical, Trash, UserPlus } from "lucide-react";
+import { MessageCircleIcon, MoreVertical, Trash, Search, X } from "lucide-react";
 import useChatList from "../../hooks/useChatlist";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -28,6 +27,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFirebasePresence } from "../../hooks/useFirebasePresence";
+import { Input } from "@/components/ui/input";
+
 function ChatItem({ chat, onSelect, onDelete }) {
   const { isOnline } = useFirebasePresence(chat.name);
 
@@ -37,10 +38,7 @@ function ChatItem({ chat, onSelect, onDelete }) {
     const messageDate = new Date(timestamp);
 
     if (messageDate.toDateString() === now.toDateString()) {
-      return messageDate.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      return messageDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }
 
     const yesterday = new Date(now);
@@ -55,10 +53,7 @@ function ChatItem({ chat, onSelect, onDelete }) {
       return messageDate.toLocaleDateString([], { weekday: "short" });
     }
 
-    return messageDate.toLocaleDateString([], {
-      month: "short",
-      day: "numeric",
-    });
+    return messageDate.toLocaleDateString([], { month: "short", day: "numeric" });
   };
 
   const getInitials = (name) => {
@@ -125,12 +120,9 @@ function ChatItem({ chat, onSelect, onDelete }) {
                   <MoreVertical className="w-5 h-5 text-neutral-500" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-40 shadow-lg border border-neutral-200 dark:border-neutral-700"
-              >
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem
-                  className="text-red-500 hover:text-red-600 dark:hover:text-red-400 flex items-center cursor-pointer px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  className="text-red-500 flex items-center px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                   onClick={(e) => onDelete(chat.refid, e)}
                 >
                   <Trash className="w-4 h-4 mr-2" />
@@ -140,10 +132,7 @@ function ChatItem({ chat, onSelect, onDelete }) {
             </DropdownMenu>
           </div>
         </TooltipTrigger>
-        <TooltipContent
-          side="right"
-          className="bg-neutral-800 text-white border-none px-2 py-1 text-sm shadow-md"
-        >
+        <TooltipContent side="right">
           Chat with {chat.name}
         </TooltipContent>
       </Tooltip>
@@ -151,12 +140,54 @@ function ChatItem({ chat, onSelect, onDelete }) {
   );
 }
 
-function ChatList({ setActiveChat }) {
-  const { chatList, isLoading, deleteChat } = useChatList();
+const EmptyStateSkeleton = () => (
+  <div className="divide-y dark:divide-neutral-800">
+    {[...Array(5)].map((_, index) => (
+      <div key={index} className="p-3 flex items-center space-x-3">
+        <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-10" />
+          </div>
+          <Skeleton className="h-3 w-36" />
+        </div>
+        <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+      </div>
+    ))}
+  </div>
+);
 
+const NoSearchResults = ({ query }) => (
+  <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+    <Search className="h-12 w-12 text-neutral-400 mb-4" />
+    <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">
+      No results found
+    </h3>
+    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
+      We couldn't find any chats matching "{query}"
+    </p>
+  </div>
+);
+
+const ChatList = forwardRef(({ setActiveChat, isSearching }, ref) => {
+  const { chatList, isLoading, deleteChat } = useChatList();
+  const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
   const navigate = useNavigate();
+
+  useImperativeHandle(ref, () => ({
+    setSearchQuery: (query) => setSearchQuery(query),
+    clearSearch: () => setSearchQuery(""),
+  }));
+
+  const filteredChatList = useMemo(() => {
+    if (!searchQuery.trim()) return chatList;
+    return chatList.filter(chat =>
+      chat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [chatList, searchQuery]);
 
   const confirmDelete = (refid, e) => {
     e.stopPropagation();
@@ -171,6 +202,22 @@ function ChatList({ setActiveChat }) {
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-neutral-900">
+      {isSearching && (
+        <div className="px-3 py-2 border-b dark:border-neutral-800 flex items-center">
+          <Input
+            type="text"
+            placeholder="Search conversations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 bg-neutral-100 dark:bg-neutral-800 border-none rounded-full py-2 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+            autoFocus
+          />
+          <Button variant="ghost" size="icon" onClick={() => setSearchQuery("")}>
+            <X className="h-5 w-5 text-neutral-500" />
+          </Button>
+        </div>
+      )}
+
       <Card className="flex flex-col h-full border-none shadow-none">
         <CardContent className="p-0 flex-1 min-h-0">
           <ScrollArea className="h-full">
@@ -186,9 +233,9 @@ function ChatList({ setActiveChat }) {
                   </div>
                 ))}
               </div>
-            ) : chatList.length > 0 ? (
+            ) : filteredChatList.length > 0 ? (
               <div className="divide-y dark:divide-neutral-800">
-                {chatList.map((chat) => (
+                {filteredChatList.map(chat => (
                   <ChatItem
                     key={chat.refid}
                     chat={chat}
@@ -197,45 +244,25 @@ function ChatList({ setActiveChat }) {
                   />
                 ))}
               </div>
+            ) : searchQuery.trim() !== "" ? (
+              <NoSearchResults query={searchQuery} />
             ) : (
-              <div className="p-8 flex flex-col items-center justify-center h-full text-center">
-                <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mb-4">
-                  <MessageCircleIcon className="h-8 w-8 text-orange-500" />
-                </div>
-                <p className="text-neutral-600 dark:text-neutral-300 mb-2 font-medium">
-                  No chats yet
-                </p>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-xs">
-                  Start a new conversation by searching for users
-                </p>
-                <Button className="mt-4 bg-orange-500 hover:bg-orange-600 text-white rounded-full px-4 py-2">
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  New Chat
-                </Button>
-              </div>
+              <EmptyStateSkeleton />
             )}
           </ScrollArea>
         </CardContent>
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 shadow-xl rounded-lg">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-              Delete Chat?
-            </DialogTitle>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
+            <DialogTitle>Delete Chat?</DialogTitle>
+            <p className="text-sm text-neutral-500">
               This will permanently delete all messages in this chat.
             </p>
           </DialogHeader>
-          <DialogFooter className="mt-6 flex gap-2 sm:gap-0 sm:justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setOpen(false)}
-              className="w-full sm:w-auto border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-            >
-              Cancel
-            </Button>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button
               variant="destructive"
               onClick={() => {
@@ -243,7 +270,6 @@ function ChatList({ setActiveChat }) {
                 setOpen(false);
                 navigate("/home");
               }}
-              className="w-full sm:w-auto bg-red-500 hover:bg-red-600"
             >
               Delete
             </Button>
@@ -252,6 +278,6 @@ function ChatList({ setActiveChat }) {
       </Dialog>
     </div>
   );
-}
+});
 
 export default ChatList;
