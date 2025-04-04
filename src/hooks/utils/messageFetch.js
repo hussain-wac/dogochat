@@ -9,7 +9,7 @@ import {
   Timestamp 
 } from "firebase/firestore";
 
-// Fetch the most recent messages for initial load
+
 export const fetchMessages = (db, chatId, messagesPerPage, callback) => {
   if (!chatId) return () => {};
 

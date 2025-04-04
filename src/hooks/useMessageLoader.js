@@ -23,7 +23,7 @@ const useMessageLoader = ({
   useEffect(() => {
     if (!activeChat) return;
 
-    console.log("Switching to new chat:", activeChat);
+    // console.log("Switching to new chat:", activeChat);
 
     // Clear existing messages and states
     setMessages([]);
@@ -32,7 +32,7 @@ const useMessageLoader = ({
     setHasMoreMessages(true);
 
     const unsubscribe = fetchMessages(db, activeChat, MESSAGES_PER_PAGE, (newMessages) => {
-      console.log(`Fetched ${newMessages.length} messages for chat ${activeChat}`);
+    //   console.log(`Fetched ${newMessages.length} messages for chat ${activeChat}`);
       messagesRef.current = newMessages;
       setMessages(newMessages);
 
@@ -45,7 +45,7 @@ const useMessageLoader = ({
     });
 
     return () => {
-      console.log("Unsubscribing from chat:", activeChat);
+    //   console.log("Unsubscribing from chat:", activeChat);
       unsubscribe();
     };
   }, [activeChat, db]);

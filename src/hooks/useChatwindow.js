@@ -104,7 +104,7 @@ const useChatWindow = (initialUsername) => {
       saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
     }
 
-    console.log("[useChatWindow] Switching to chat:", chatId);
+    // console.log("[useChatWindow] Switching to chat:", chatId);
 
     setMessages([]);
     setActiveChat(chatId);
@@ -136,7 +136,6 @@ const useChatWindow = (initialUsername) => {
   useEffect(() => {
     if (!initialUsername || !user) return;
 
-    console.log("[useChatWindow] Fetching chatId for:", initialUsername);
 
     fetchChatId(db, user, initialUsername, (chatId) => {
       if (chatId) {
