@@ -1,9 +1,9 @@
 import { useRef, useEffect, useCallback } from "react";
-import { 
-  getScrollElement, 
-  checkIsAtBottom, 
+import {
+  getScrollElement,
+  checkIsAtBottom,
   jumpToBottom,
-  positionChat
+  positionChat,
 } from "./utils/scrollUtils";
 
 const useMessageScroll = ({
@@ -11,7 +11,6 @@ const useMessageScroll = ({
   activeChat,
   messages,
   user,
-  scrollPositions,
   setIsAtBottom,
   setNewMessagesCount,
   isLoadingMore,
@@ -21,99 +20,78 @@ const useMessageScroll = ({
   const previousMessagesLength = useRef(0);
   const isAutoScrollingRef = useRef(false);
 
-  // Effect: Setup scroll handler for bottom detection
+  // Detect if user scrolls to bottom or away
   useEffect(() => {
     if (!scrollAreaRef.current || !activeChat) return;
-    
+
     const scrollElement = getScrollElement(scrollAreaRef);
     if (!scrollElement) return;
-    
+
     const handleScroll = () => {
-      // Skip checks during programmatic scrolling
       if (isAutoScrollingRef.current) return;
-      
-      // Check if we're at the bottom
+
       const isBottom = checkIsAtBottom(scrollAreaRef);
       setIsAtBottom(isBottom);
       if (isBottom) setNewMessagesCount(0);
     };
-    
-    scrollElement.addEventListener('scroll', handleScroll, { passive: true });
-    return () => scrollElement.removeEventListener('scroll', handleScroll);
+
+    scrollElement.addEventListener("scroll", handleScroll, { passive: true });
+    return () => scrollElement.removeEventListener("scroll", handleScroll);
   }, [activeChat, scrollAreaRef, setIsAtBottom, setNewMessagesCount]);
 
-  // Effect: Initial positioning
+  // Initial scroll position
   useEffect(() => {
     if (!activeChat || !messages.length || !scrollAreaRef.current || initialPositionSet.current) return;
-    
-    // Use requestAnimationFrame for smoother positioning
+
     requestAnimationFrame(() => {
       isAutoScrollingRef.current = true;
       positionChat(
-        scrollAreaRef, 
-        activeChat, 
-        messages, 
-        user, 
-        scrollPositions, 
-        setIsAtBottom, 
+        scrollAreaRef,
+        activeChat,
+        messages,
+        user,
+        setIsAtBottom,
         setNewMessagesCount
       );
       initialPositionSet.current = true;
-      
-      // Reset flag after scrolling is complete
+
       setTimeout(() => {
         isAutoScrollingRef.current = false;
       }, 100);
     });
-  }, [messages, activeChat, user, scrollPositions, setIsAtBottom, setNewMessagesCount]);
+  }, [messages, activeChat, user, setIsAtBottom, setNewMessagesCount]);
 
-  // Effect: Handle new messages and autoscroll
+  // Track message count but don't scroll
   useEffect(() => {
     if (!messages.length || !scrollAreaRef.current || !initialPositionSet.current) return;
-    
-    const lastMessage = messages[messages.length - 1];
+
     const previousLength = previousMessagesLength.current;
     const currentLength = messages.length;
-    
+
     if (currentLength > previousLength && !isLoadingMore) {
-      const isLastMessageFromUser = lastMessage?.sender === user?.uid;
       const newCount = currentLength - previousLength;
-      
       previousMessagesLength.current = currentLength;
-      
-      if ((isAtBottom && !isLoadingMore) || isLastMessageFromUser) {
-        isAutoScrollingRef.current = true;
-        // Use requestAnimationFrame for smoother scrolling
-        requestAnimationFrame(() => {
-          jumpToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom);
-          
-          // Reset flag after scrolling is complete
-          setTimeout(() => {
-            isAutoScrollingRef.current = false;
-          }, 100);
-        });
-      } else if (!isLoadingMore) {
+
+      if (!isAtBottom) {
         setNewMessagesCount(prev => prev + newCount);
       }
     } else if (!isLoadingMore) {
       previousMessagesLength.current = currentLength;
     }
-  }, [messages, user?.uid, isAtBottom, isLoadingMore, setNewMessagesCount, setIsAtBottom]);
+  }, [messages, isAtBottom, isLoadingMore, setNewMessagesCount]);
 
-  // Effect: Reset refs on chat change
+  // Reset state on chat switch
   useEffect(() => {
     initialPositionSet.current = false;
     previousMessagesLength.current = 0;
   }, [activeChat]);
 
-  // Smooth scroll to bottom implementation
+  // Expose manual scroll to bottom
   const scrollToBottom = useCallback(() => {
     isAutoScrollingRef.current = true;
-    
+
     requestAnimationFrame(() => {
       jumpToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom);
-      
-      // Reset flag after scrolling is complete
       setTimeout(() => {
         isAutoScrollingRef.current = false;
       }, 100);
@@ -121,9 +99,8 @@ const useMessageScroll = ({
   }, [scrollAreaRef, setNewMessagesCount, setIsAtBottom]);
 
   return {
-    initialPositionSet,
-    previousMessagesLength,
-    scrollToBottom
+    scrollToBottom,
+    isAutoScrollingRef,
   };
 };
 
