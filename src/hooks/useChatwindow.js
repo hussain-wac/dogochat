@@ -30,11 +30,8 @@ const useChatWindow = (initialUsername) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [lastFetchedTimestamp, setLastFetchedTimestamp] = useState(null);
-  
-  // Refs
   const scrollAreaRef = useRef(null);
 
-  // Message handlers hook
   const {
     handleSendMessage,
     handleMarkMessageAsRead,
