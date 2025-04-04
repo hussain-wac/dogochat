@@ -19,7 +19,6 @@ function ChatWindow({ initialUsername, onBackClick }) {
     newMessage,
     scrollAreaRef,
     isLoading,
-
     newMessagesCount,
     scrollToBottom,
     groupedMessages,
@@ -30,6 +29,8 @@ function ChatWindow({ initialUsername, onBackClick }) {
     handleDeleteMessages,
     isSelectionMode,
     toggleSelectionMode,
+    isLoadingMore,
+    hasMoreMessages,
   } = useChatWindow(initialUsername);
   const presence = useFirebasePresence(initialUsername);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -103,7 +104,9 @@ function ChatWindow({ initialUsername, onBackClick }) {
             toggleMessageSelection={toggleMessageSelection}
             handleDeleteMessages={handleDeleteMessages}
             isSelectionMode={isSelectionMode}
-            chatId={activeChat} 
+            chatId={activeChat}
+            isLoadingMore={isLoadingMore}
+            hasMoreMessages={hasMoreMessages}
           />
           <NewMessagesBadge
             newMessagesCount={newMessagesCount}
