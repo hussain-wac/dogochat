@@ -44,7 +44,7 @@ function Navbar() {
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full animate-pulse"></div>
           </div>
           <span className="font-bold text-xl md:text-2xl bg-gradient-to-r from-neutral-900 to-neutral-700 dark:from-white dark:to-neutral-300 bg-clip-text text-transparent">
-            Dogo<span className="text-orange-500">chat</span>
+            Kabo<span className="text-orange-500">su</span>
           </span>
         </div>
 

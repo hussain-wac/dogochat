@@ -206,7 +206,8 @@ function Home() {
                 <MessageCircleIcon className="h-12 w-12 text-orange-500" />
               </div>
               <h2 className="text-2xl font-semibold text-neutral-800 dark:text-neutral-200 text-center">
-                Welcome to Dogochat
+                Welcome to Kabosu
+
               </h2>
               <p className="text-center max-w-md text-neutral-500 dark:text-neutral-400">
                 Select a conversation from the sidebar or start a new chat to begin messaging
