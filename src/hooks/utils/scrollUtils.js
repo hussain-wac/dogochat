@@ -1,3 +1,8 @@
+import { atom } from "jotai";
+
+// Store scroll positions for each chat
+export const scrollPositionsAtom = atom({});
+
 export const getScrollElement = (scrollAreaRef) => {
   return (
     scrollAreaRef.current?.querySelector("[data-radix-scroll-area-viewport]") || null
@@ -20,7 +25,7 @@ export const setScrollPosition = (scrollAreaRef, position, smooth = false) => {
     if (smooth) {
       scrollElement.scrollTo({
         top: position,
-        behavior: 'smooth',
+        behavior: 'smooth'
       });
     } else {
       scrollElement.scrollTop = position;
@@ -28,55 +33,69 @@ export const setScrollPosition = (scrollAreaRef, position, smooth = false) => {
   }
 };
 
-// Smoothly scroll to bottom
+// Smoothly jump to bottom
 export const jumpToBottom = (scrollAreaRef, setNewMessagesCount, setIsAtBottom) => {
   const scrollElement = getScrollElement(scrollAreaRef);
   if (scrollElement) {
     scrollElement.scrollTo({
       top: scrollElement.scrollHeight,
-      behavior: 'smooth',
+      behavior: 'smooth'
     });
-    setNewMessagesCount?.(0);
-    setIsAtBottom?.(true);
+    if (setNewMessagesCount) setNewMessagesCount(0);
+    if (setIsAtBottom) setIsAtBottom(true);
   }
 };
 
-// Smoothly scroll to a specific message
+// Smoothly jump to a specific message
 export const jumpToMessage = (scrollAreaRef, messageId, setIsAtBottom) => {
   const scrollElement = getScrollElement(scrollAreaRef);
-  if (!scrollElement) return;
+  if (scrollElement) {
+    const messageElement = scrollElement.querySelector(`[data-message-id="${messageId}"]`);
+    if (messageElement) {
+      const messageRect = messageElement.getBoundingClientRect();
+      const containerRect = scrollElement.getBoundingClientRect();
+      const centerOffset = (containerRect.height - messageRect.height) / 2;
+      const targetScrollTop = scrollElement.scrollTop +
+                              messageElement.offsetTop -
+                              scrollElement.offsetTop -
+                              centerOffset;
 
-  const messageElement = scrollElement.querySelector(`[data-message-id="${messageId}"]`);
-  if (messageElement) {
-    const containerRect = scrollElement.getBoundingClientRect();
-    const centerOffset = (containerRect.height - messageElement.offsetHeight) / 2;
-    const targetScrollTop =
-      scrollElement.scrollTop +
-      messageElement.offsetTop -
-      scrollElement.offsetTop -
-      centerOffset;
+      scrollElement.scrollTo({
+        top: targetScrollTop,
+        behavior: 'smooth'
+      });
 
-    scrollElement.scrollTo({
-      top: targetScrollTop,
-      behavior: 'smooth',
-    });
-
-    const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-    setIsAtBottom?.(scrollTop + clientHeight >= scrollHeight - 10);
+      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+      if (setIsAtBottom) setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
+    }
   }
 };
 
-// Scroll to first unread or bottom if none
-export const positionChat = (
-  scrollAreaRef,
-  chatId,
-  messages,
-  user,
-  setIsAtBottom,
-  setNewMessagesCount
-) => {
+// Save scroll position
+export const saveScrollPosition = (scrollAreaRef, chatId, set) => {
+  const scrollElement = getScrollElement(scrollAreaRef);
+  if (scrollElement && chatId) {
+    set((prev) => ({
+      ...prev,
+      [chatId]: scrollElement.scrollTop
+    }));
+  }
+};
+
+// Position chat (with smooth scroll if no saved position)
+export const positionChat = (scrollAreaRef, chatId, messages, user, scrollPositions, setIsAtBottom, setNewMessagesCount) => {
   const scrollElement = getScrollElement(scrollAreaRef);
   if (!scrollElement || !messages.length) return;
+
+  const savedPosition = scrollPositions[chatId];
+  
+  if (savedPosition !== undefined) {
+    scrollElement.scrollTop = savedPosition;
+
+    const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+    if (setIsAtBottom) setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
+    return;
+  }
 
   const firstUnreadIndex = messages.findIndex(
     (msg) => !msg.readBy?.includes(user.uid) && msg.sender !== user.uid
@@ -88,22 +107,20 @@ export const positionChat = (
 
     if (messageElement) {
       const containerHeight = scrollElement.clientHeight;
-      const targetPosition = messageElement.offsetTop - containerHeight / 3;
+      const targetPosition = messageElement.offsetTop - (containerHeight / 3);
 
       scrollElement.scrollTo({
         top: targetPosition,
-        behavior: 'smooth',
+        behavior: 'smooth'
       });
-      return;
     }
+  } else {
+    scrollElement.scrollTo({
+      top: scrollElement.scrollHeight,
+      behavior: 'smooth'
+    });
+
+    if (setIsAtBottom) setIsAtBottom(true);
+    if (setNewMessagesCount) setNewMessagesCount(0);
   }
-
-  // No unread message found — scroll to bottom
-  scrollElement.scrollTo({
-    top: scrollElement.scrollHeight,
-    behavior: 'smooth',
-  });
-
-  setIsAtBottom?.(true);
-  setNewMessagesCount?.(0);
 };
