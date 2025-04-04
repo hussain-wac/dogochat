@@ -9,7 +9,6 @@ import {
   Timestamp 
 } from "firebase/firestore";
 
-
 export const fetchMessages = (db, chatId, messagesPerPage, callback) => {
   if (!chatId) return () => {};
 
@@ -53,7 +52,6 @@ export const fetchMessages = (db, chatId, messagesPerPage, callback) => {
   return unsubscribe;
 };
 
-// Fetch older messages for infinite scrolling (unchanged)
 export const fetchOlderMessages = async (db, chatId, oldestTimestamp, messagesPerPage) => {
   if (!chatId || !oldestTimestamp) {
     return { olderMessages: [], oldestTimestamp: null };
