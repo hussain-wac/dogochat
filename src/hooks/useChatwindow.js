@@ -1,23 +1,19 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import { globalState } from "../jotai/globalState";
 import { useAtom, useAtomValue } from "jotai";
-import { fetchMessages, fetchOlderMessages } from "./utils/messageFetch";
 import { formatMessageTime } from "./utils/timeFormat";
-import { markMessageAsRead, fetchChatId } from "./utils/chatOperations";
+import { fetchChatId } from "./utils/chatOperations";
 import {
-  getScrollElement,
-  checkIsAtBottom,
-  jumpToBottom,
-  positionChat,
   saveScrollPosition,
   scrollPositionsAtom
 } from "./utils/scrollUtils";
-import { observeMessages } from "./utils/intersectionUtils";
 import useMessageHandlers from "./useMessageHandlers";
 import useInfiniteScroll from "./useInfiniteScroll";
+import useReadMessages from "./useReadMessages";
+import useMessageScroll from "./useMessageScroll";
+import useMessageLoader from "./useMessageLoader";
+import { useEffect } from "react";
 import { db } from "../firebase";
-
-const MESSAGES_PER_PAGE = 20;
 
 const useChatWindow = (initialUsername) => {
   const user = useAtomValue(globalState);
@@ -37,12 +33,8 @@ const useChatWindow = (initialUsername) => {
   
   // Refs
   const scrollAreaRef = useRef(null);
-  const observerRef = useRef(null);
-  const hasMarkedRead = useRef(false);
-  const previousMessagesLength = useRef(0);
-  const initialPositionSet = useRef(false);
-  const messagesRef = useRef([]);
 
+  // Message handlers hook
   const {
     handleSendMessage,
     handleMarkMessageAsRead,
@@ -64,62 +56,21 @@ const useChatWindow = (initialUsername) => {
     setMessages,
   });
 
-  // Set active chat and reset states
-  const handleSetActiveChat = (chatId) => {
-    if (activeChat) saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
-    setActiveChat(chatId);
-    initialPositionSet.current = false;
-    setMessages([]);
-    setHasMoreMessages(true);
-    setLastFetchedTimestamp(null);
-  };
-  
-  // Send message with auto-scroll
-  const sendMessage = async (...args) => {
-    const result = await handleSendMessage(...args);
-    setTimeout(() => jumpToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom), 50);
-    return result;
-  };
+  // Message loader hook
+  const { messagesRef, loadOlderMessages } = useMessageLoader({
+    activeChat,
+    db,
+    setMessages,
+    setLastFetchedTimestamp,
+    setHasMoreMessages,
+    isLoadingMore,
+    setIsLoadingMore,
+    lastFetchedTimestamp,
+    hasMoreMessages,
+    scrollAreaRef
+  });
 
-  // Load older messages function
-  const loadOlderMessages = async () => {
-    if (!activeChat || isLoadingMore || !hasMoreMessages || !lastFetchedTimestamp) return;
-    
-    setIsLoadingMore(true);
-    try {
-      const { olderMessages, oldestTimestamp } = await fetchOlderMessages(
-        db, activeChat, lastFetchedTimestamp, MESSAGES_PER_PAGE
-      );
-
-      if (olderMessages.length > 0) {
-        // Save current scroll position
-        const scrollElement = getScrollElement(scrollAreaRef);
-        const scrollHeight = scrollElement?.scrollHeight || 0;
-        const scrollTop = scrollElement?.scrollTop || 0;
-        
-        // Update messages
-        setMessages(prev => [...olderMessages, ...prev]);
-        messagesRef.current = [...olderMessages, ...messagesRef.current];
-        setLastFetchedTimestamp(oldestTimestamp);
-        setHasMoreMessages(olderMessages.length >= MESSAGES_PER_PAGE);
-        
-        // Restore scroll position
-        setTimeout(() => {
-          if (scrollElement) {
-            scrollElement.scrollTop = scrollTop + (scrollElement.scrollHeight - scrollHeight);
-          }
-        }, 50);
-      } else {
-        setHasMoreMessages(false);
-      }
-    } catch (error) {
-      console.error("Error loading older messages:", error);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  };
-
-  // Initialize infinite scroll hook
+  // Infinite scroll hook
   useInfiniteScroll({
     scrollAreaRef,
     activeChat,
@@ -128,6 +79,45 @@ const useChatWindow = (initialUsername) => {
     loadOlderMessages,
     messages,
   });
+
+  // Read messages tracking hook
+  useReadMessages({
+    scrollAreaRef,
+    activeChat,
+    messages,
+    userId: user?.uid,
+    handleMarkMessageAsRead,
+    setNewMessagesCount
+  });
+
+  // Message scroll behavior hook
+  const { scrollToBottom } = useMessageScroll({
+    scrollAreaRef,
+    activeChat,
+    messages,
+    user,
+    scrollPositions,
+    setIsAtBottom,
+    setNewMessagesCount,
+    isLoadingMore,
+    isAtBottom
+  });
+
+  // Set active chat and reset states
+  const handleSetActiveChat = (chatId) => {
+    if (activeChat) saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
+    setActiveChat(chatId);
+    setMessages([]);
+    setHasMoreMessages(true);
+    setLastFetchedTimestamp(null);
+  };
+  
+  // Send message with auto-scroll
+  const sendMessage = async (...args) => {
+    const result = await handleSendMessage(...args);
+    setTimeout(scrollToBottom, 50);
+    return result;
+  };
 
   // Group messages by date (memoized)
   const groupedMessages = useMemo(() => {
@@ -146,125 +136,6 @@ const useChatWindow = (initialUsername) => {
     fetchChatId(db, user, initialUsername, handleSetActiveChat);
   }, [initialUsername, user]);
 
-  // Effect: Subscribe to messages
-  useEffect(() => {
-    if (!activeChat) return;
-    const unsubscribe = fetchMessages(db, activeChat, MESSAGES_PER_PAGE, (newMessages, oldestTimestamp) => {
-      setMessages(newMessages);
-      messagesRef.current = newMessages;
-      setLastFetchedTimestamp(oldestTimestamp);
-      setHasMoreMessages(newMessages.length >= MESSAGES_PER_PAGE);
-    });
-    return () => unsubscribe();
-  }, [activeChat]);
-
-  // Effect: Setup scroll handler for new messages badge
-  useEffect(() => {
-    if (!scrollAreaRef.current || !activeChat) return;
-    
-    const scrollElement = getScrollElement(scrollAreaRef);
-    if (!scrollElement) return;
-    
-    const handleScroll = () => {
-      // Check bottom for new messages badge
-      const isBottom = checkIsAtBottom(scrollAreaRef);
-      setIsAtBottom(isBottom);
-      if (isBottom) setNewMessagesCount(0);
-    };
-    
-    scrollElement.addEventListener('scroll', handleScroll);
-    return () => scrollElement.removeEventListener('scroll', handleScroll);
-  }, [activeChat]);
-
-  // Effect: Initial positioning
-  useEffect(() => {
-    if (!activeChat || !messages.length || !scrollAreaRef.current || initialPositionSet.current) return;
-    
-    setTimeout(() => {
-      positionChat(
-        scrollAreaRef, 
-        activeChat, 
-        messages, 
-        user, 
-        scrollPositions, 
-        setIsAtBottom, 
-        setNewMessagesCount
-      );
-      initialPositionSet.current = true;
-    }, 50);
-  }, [messages, activeChat, user, scrollPositions]);
-
-  // Effect: Mark unread messages as read
-  useEffect(() => {
-    if (!activeChat || !messages.length || hasMarkedRead.current) return;
-    
-    const unreadMessages = messages.filter(
-      msg => !msg.readBy?.includes(user.uid) && msg.sender !== user.uid
-    );
-    
-    if (unreadMessages.length > 0) {
-      Promise.all(
-        unreadMessages.map(msg => markMessageAsRead(db, activeChat, msg.id, user.uid))
-      ).then(() => {
-        hasMarkedRead.current = true;
-        setNewMessagesCount(0);
-      });
-    } else {
-      hasMarkedRead.current = true;
-      setNewMessagesCount(0);
-    }
-  }, [messages, activeChat, user?.uid]);
-
-  // Effect: Reset refs on chat change
-  useEffect(() => {
-    hasMarkedRead.current = false;
-    initialPositionSet.current = false;
-  }, [activeChat]);
-
-  // Effect: Setup message intersection observer
-  useEffect(() => {
-    if (!scrollAreaRef.current || !messages.length || !activeChat) return;
-    
-    if (observerRef.current) observerRef.current.disconnect();
-    
-    observerRef.current = observeMessages(
-      messages,
-      user.uid,
-      handleMarkMessageAsRead,
-      scrollAreaRef
-    );
-    
-    getScrollElement(scrollAreaRef)
-      ?.querySelectorAll("[data-message-id]")
-      .forEach(element => observerRef.current.observe(element));
-      
-    return () => observerRef.current?.disconnect();
-  }, [messages, activeChat, user?.uid, handleMarkMessageAsRead]);
-
-  // Effect: Handle new messages and scroll
-  useEffect(() => {
-    if (!messages.length || !scrollAreaRef.current || !initialPositionSet.current) return;
-    
-    const lastMessage = messages[messages.length - 1];
-    const previousLength = previousMessagesLength.current;
-    const currentLength = messages.length;
-    
-    if (currentLength > previousLength && !isLoadingMore) {
-      const isLastMessageFromUser = lastMessage?.sender === user.uid;
-      const newCount = currentLength - previousLength;
-      
-      previousMessagesLength.current = currentLength;
-      
-      if (isAtBottom || isLastMessageFromUser) {
-        jumpToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom);
-      } else {
-        setNewMessagesCount(prev => prev + newCount);
-      }
-    } else if (!isLoadingMore) {
-      previousMessagesLength.current = currentLength;
-    }
-  }, [messages, user?.uid, isAtBottom, isLoadingMore]);
-
   // Effect: Save scroll position on unmount
   useEffect(() => {
     return () => {
@@ -272,7 +143,7 @@ const useChatWindow = (initialUsername) => {
         saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
       }
     };
-  }, [activeChat]);
+  }, [activeChat, setScrollPositions]);
 
   return {
     username: initialUsername,
@@ -285,7 +156,7 @@ const useChatWindow = (initialUsername) => {
     scrollAreaRef,
     isLoading: !activeChat || messages.length === 0,
     newMessagesCount,
-    scrollToBottom: () => jumpToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom),
+    scrollToBottom,
     groupedMessages,
     formatMessageTime,
     user,
