@@ -14,8 +14,8 @@ export default defineConfig({
         enabled: true,
       },
       manifest: {
-        name: "Dogochat",
-        short_name: "Dogochat",
+        name: "Kabosu",
+        short_name: "Kabosu",
         description: "A chat app for everyone",
         theme_color: "#ffffff",
         background_color: "#ffffff",
