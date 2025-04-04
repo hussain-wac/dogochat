@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ResizablePanelGroup,
@@ -9,7 +9,7 @@ import ChatList from "./Chatitems/Chatlist";
 import SearchBar from "./Chatitems/Searchbar";
 import ChatWindow from "./Chatitems/ChatWindow";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, MessageCircleIcon, Users2, Settings2, Search } from "lucide-react";
+import { PlusIcon, MessageCircleIcon } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -20,32 +20,10 @@ import { motion, AnimatePresence } from "framer-motion";
 function Home() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  // Show sidebar by default on mobile when no chat is selected
-  const [showSidebar, setShowSidebar] = useState(true); 
+  const [showSidebar, setShowSidebar] = useState(!isMobile);
   const navigate = useNavigate();
   const { username: initialUsername } = useParams();
   const [selectedUsername, setSelectedUsername] = useState(initialUsername);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (!mobile) setShowSidebar(true);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    setSelectedUsername(initialUsername);
-    // Only hide sidebar on mobile when a chat is selected
-    if (initialUsername && isMobile) {
-      setShowSidebar(false);
-    } else if (!initialUsername && isMobile) {
-      setShowSidebar(true); // Show chat list by default on mobile
-    }
-  }, [initialUsername, isMobile]);
 
   const buttonVariants = {
     hover: { scale: 1.05, transition: { duration: 0.2 } },
@@ -124,28 +102,10 @@ function Home() {
               <ChatWindow 
                 initialUsername={selectedUsername} 
                 onBackClick={toggleSidebar}
+                isMobile={true}
               />
             ) : null}
           </div>
-          
-          {selectedUsername && !showSidebar && (
-            <div className="absolute right-4 bottom-4 z-20">
-              <motion.div
-                variants={buttonVariants}
-                initial="initial"
-                whileHover="hover"
-                whileTap="tap"
-              >
-                <Button
-                  onClick={toggleSidebar}
-                  size="icon"
-                  className="h-12 w-12 rounded-full bg-orange-500 hover:bg-orange-600 text-white shadow-lg"
-                >
-                  <MessageCircleIcon className="h-6 w-6" />
-                </Button>
-              </motion.div>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -200,14 +160,11 @@ function Home() {
             <ChatWindow initialUsername={selectedUsername} />
           ) : (
             <div className="flex flex-col items-center justify-center text-neutral-500 h-full space-y-4 p-8">
-              {/* <div className="w-24 h-24 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center animate-pulse"> */}
               <img
-              src="/meme2.png"
-              alt="Dogochat Logo"
-              className="w-60 h-60 filter drop-shadow-md"
-            />
-                {/* <MessageCircleIcon className="h-12 w-12 text-orange-500" /> */}
-              {/* </div> */}
+                src="/meme2.png"
+                alt="Dogochat Logo"
+                className="w-60 h-60 filter drop-shadow-md"
+              />
               <h2 className="text-2xl font-semibold text-neutral-800 dark:text-neutral-200 text-center">
                 Welcome to Kabosu
               </h2>
