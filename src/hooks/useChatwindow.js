@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { globalState } from "../jotai/globalState";
 import { useAtom, useAtomValue } from "jotai";
 import { formatMessageTime } from "./utils/timeFormat";
@@ -70,7 +70,7 @@ const useChatWindow = (initialUsername) => {
     scrollAreaRef
   });
 
-  // Infinite scroll hook
+  // Infinite scroll hook - memoize dependencies to prevent unnecessary recalculations
   useInfiniteScroll({
     scrollAreaRef,
     activeChat,
@@ -103,21 +103,26 @@ const useChatWindow = (initialUsername) => {
     isAtBottom
   });
 
-  // Set active chat and reset states
-  const handleSetActiveChat = (chatId) => {
+  // Set active chat and reset states - memoized to prevent unnecessary re-renders
+  const handleSetActiveChat = useCallback((chatId) => {
     if (activeChat) saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
     setActiveChat(chatId);
     setMessages([]);
     setHasMoreMessages(true);
     setLastFetchedTimestamp(null);
-  };
+    setIsLoadingMore(false);
+    setNewMessagesCount(0);
+  }, [activeChat, scrollAreaRef, setScrollPositions]);
   
   // Send message with auto-scroll
-  const sendMessage = async (...args) => {
+  const sendMessage = useCallback(async (...args) => {
     const result = await handleSendMessage(...args);
-    setTimeout(scrollToBottom, 50);
+    // Use requestAnimationFrame for smoother scrolling
+    requestAnimationFrame(() => {
+      scrollToBottom();
+    });
     return result;
-  };
+  }, [handleSendMessage, scrollToBottom]);
 
   // Group messages by date (memoized)
   const groupedMessages = useMemo(() => {
@@ -134,7 +139,7 @@ const useChatWindow = (initialUsername) => {
   useEffect(() => {
     if (!initialUsername || !user) return;
     fetchChatId(db, user, initialUsername, handleSetActiveChat);
-  }, [initialUsername, user]);
+  }, [initialUsername, user, handleSetActiveChat]);
 
   // Effect: Save scroll position on unmount
   useEffect(() => {

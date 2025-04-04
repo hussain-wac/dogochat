@@ -17,6 +17,7 @@ const useMessageLoader = ({
   scrollAreaRef
 }) => {
   const messagesRef = useRef([]);
+  const scrollPositionRef = useRef(null);
 
   // Effect: Subscribe to messages
   useEffect(() => {
@@ -38,35 +39,46 @@ const useMessageLoader = ({
     
     setIsLoadingMore(true);
     try {
+      // Save scroll state before fetching
+      const scrollElement = getScrollElement(scrollAreaRef);
+      if (scrollElement) {
+        scrollPositionRef.current = {
+          scrollHeight: scrollElement.scrollHeight,
+          scrollTop: scrollElement.scrollTop
+        };
+      }
+      
       const { olderMessages, oldestTimestamp } = await fetchOlderMessages(
         db, activeChat, lastFetchedTimestamp, MESSAGES_PER_PAGE
       );
 
       if (olderMessages.length > 0) {
-        // Save current scroll position
-        const scrollElement = getScrollElement(scrollAreaRef);
-        const scrollHeight = scrollElement?.scrollHeight || 0;
-        const scrollTop = scrollElement?.scrollTop || 0;
-        
-        // Update messages
-        setMessages(prev => [...olderMessages, ...prev]);
-        messagesRef.current = [...olderMessages, ...messagesRef.current];
-        setLastFetchedTimestamp(oldestTimestamp);
-        setHasMoreMessages(olderMessages.length >= MESSAGES_PER_PAGE);
-        
-        // Restore scroll position
+        // Update messages with a slight delay to ensure smooth rendering
         setTimeout(() => {
-          if (scrollElement) {
-            scrollElement.scrollTop = scrollTop + (scrollElement.scrollHeight - scrollHeight);
-          }
-        }, 50);
+          setMessages(prev => [...olderMessages, ...prev]);
+          messagesRef.current = [...olderMessages, ...messagesRef.current];
+          setLastFetchedTimestamp(oldestTimestamp);
+          setHasMoreMessages(olderMessages.length >= MESSAGES_PER_PAGE);
+          
+          // Restore scroll position with a slight delay
+          requestAnimationFrame(() => {
+            const scrollElement = getScrollElement(scrollAreaRef);
+            if (scrollElement && scrollPositionRef.current) {
+              const newScrollTop = scrollElement.scrollHeight - 
+                scrollPositionRef.current.scrollHeight + 
+                scrollPositionRef.current.scrollTop;
+              
+              scrollElement.scrollTop = newScrollTop;
+            }
+          });
+        }, 10);
       } else {
         setHasMoreMessages(false);
       }
     } catch (error) {
       console.error("Error loading older messages:", error);
     } finally {
-      setIsLoadingMore(false);
+      setTimeout(() => setIsLoadingMore(false), 300); // Add slight delay for smoother UX
     }
   };
 
