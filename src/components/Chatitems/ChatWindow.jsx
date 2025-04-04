@@ -32,6 +32,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
     isLoadingMore,
     hasMoreMessages,
   } = useChatWindow(initialUsername);
+
   const presence = useFirebasePresence(initialUsername);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();

@@ -3,60 +3,65 @@ import {
   query, 
   orderBy, 
   onSnapshot, 
-  limit, 
+  limitToLast, 
   getDocs, 
-  where, 
-  startAfter,
-  endBefore,
-  limitToLast,
-  Timestamp
+  endBefore, 
+  Timestamp 
 } from "firebase/firestore";
 
 // Fetch the most recent messages for initial load
-export const fetchMessages = (db, chatId, messagesPerPage, setMessages) => {
+export const fetchMessages = (db, chatId, messagesPerPage, callback) => {
   if (!chatId) return () => {};
 
   const messagesRef = collection(db, "chats", chatId, "messages");
   const q = query(
-    messagesRef, 
+    messagesRef,
     orderBy("timestamp", "asc"),
     limitToLast(messagesPerPage)
   );
 
+  // Initial fetch to load messages immediately
+  const fetchInitialMessages = async () => {
+    try {
+      const snapshot = await getDocs(q);
+      const initialMessages = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp.toDate(),
+      }));
+      callback(initialMessages);
+    } catch (error) {
+      console.error(`Error fetching initial messages for chatId: ${chatId}`, error);
+    }
+  };
+
+  // Call the initial fetch
+  fetchInitialMessages();
+
+  // Set up real-time listener for subsequent updates
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const fetchedMessages = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
       timestamp: doc.data().timestamp.toDate(),
     }));
-    
-    // Get the oldest timestamp for pagination
-    const oldestTimestamp = fetchedMessages.length > 0 
-      ? fetchedMessages[0].timestamp 
-      : null;
-
-    console.log(`Initial fetch: ${fetchedMessages.length} messages, oldest timestamp:`, oldestTimestamp);
-    setMessages(fetchedMessages, oldestTimestamp);
+    callback(fetchedMessages);
   }, (error) => {
-    console.error(`Error fetching messages for chatId: ${chatId}`, error);
+    console.error(`Error in real-time listener for chatId: ${chatId}`, error);
   });
 
   return unsubscribe;
 };
 
-// Fetch older messages for infinite scrolling
+// Fetch older messages for infinite scrolling (unchanged)
 export const fetchOlderMessages = async (db, chatId, oldestTimestamp, messagesPerPage) => {
   if (!chatId || !oldestTimestamp) {
-    console.log("Cannot fetch older messages: missing chatId or timestamp");
     return { olderMessages: [], oldestTimestamp: null };
   }
 
-  // Convert to Firestore Timestamp if it's a Date
   const firestoreTimestamp = oldestTimestamp instanceof Date 
     ? Timestamp.fromDate(oldestTimestamp)
     : oldestTimestamp;
-
-  console.log("Fetching messages before:", firestoreTimestamp);
 
   const messagesRef = collection(db, "chats", chatId, "messages");
   const q = query(
@@ -68,15 +73,12 @@ export const fetchOlderMessages = async (db, chatId, oldestTimestamp, messagesPe
 
   try {
     const snapshot = await getDocs(q);
-    console.log(`Got ${snapshot.docs.length} older messages`);
-    
     const olderMessages = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
       timestamp: doc.data().timestamp.toDate(),
     }));
 
-    // Get the new oldest timestamp for next pagination
     const newOldestTimestamp = olderMessages.length > 0 
       ? olderMessages[0].timestamp 
       : oldestTimestamp;

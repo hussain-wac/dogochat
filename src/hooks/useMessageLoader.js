@@ -19,72 +19,88 @@ const useMessageLoader = ({
   const messagesRef = useRef([]);
   const scrollPositionRef = useRef(null);
 
-  // Effect: Subscribe to messages
+  // 👇 Effect: Clear state and re-subscribe on chat change
   useEffect(() => {
     if (!activeChat) return;
-    
-    const unsubscribe = fetchMessages(db, activeChat, MESSAGES_PER_PAGE, (newMessages, oldestTimestamp) => {
-      setMessages(newMessages);
+
+    console.log("Switching to new chat:", activeChat);
+
+    // Clear existing messages and states
+    setMessages([]);
+    messagesRef.current = [];
+    setLastFetchedTimestamp(null);
+    setHasMoreMessages(true);
+
+    const unsubscribe = fetchMessages(db, activeChat, MESSAGES_PER_PAGE, (newMessages) => {
+      console.log(`Fetched ${newMessages.length} messages for chat ${activeChat}`);
       messagesRef.current = newMessages;
+      setMessages(newMessages);
+
+      const oldestTimestamp = newMessages.length > 0
+        ? newMessages[0].timestamp
+        : null;
+
       setLastFetchedTimestamp(oldestTimestamp);
       setHasMoreMessages(newMessages.length >= MESSAGES_PER_PAGE);
     });
-    
-    return () => unsubscribe();
-  }, [activeChat, db, setMessages, setLastFetchedTimestamp, setHasMoreMessages]);
 
-  // Load older messages function
+    return () => {
+      console.log("Unsubscribing from chat:", activeChat);
+      unsubscribe();
+    };
+  }, [activeChat, db]);
+
+  // Load older messages for infinite scroll
   const loadOlderMessages = async () => {
     if (!activeChat || isLoadingMore || !hasMoreMessages || !lastFetchedTimestamp) return;
-    
+
     setIsLoadingMore(true);
     try {
-      // Save scroll state before fetching
       const scrollElement = getScrollElement(scrollAreaRef);
       if (scrollElement) {
         scrollPositionRef.current = {
           scrollHeight: scrollElement.scrollHeight,
-          scrollTop: scrollElement.scrollTop
+          scrollTop: scrollElement.scrollTop,
         };
       }
-      
+
       const { olderMessages, oldestTimestamp } = await fetchOlderMessages(
-        db, activeChat, lastFetchedTimestamp, MESSAGES_PER_PAGE
+        db,
+        activeChat,
+        lastFetchedTimestamp,
+        MESSAGES_PER_PAGE
       );
 
       if (olderMessages.length > 0) {
-        // Update messages with a slight delay to ensure smooth rendering
-        setTimeout(() => {
-          setMessages(prev => [...olderMessages, ...prev]);
-          messagesRef.current = [...olderMessages, ...messagesRef.current];
-          setLastFetchedTimestamp(oldestTimestamp);
-          setHasMoreMessages(olderMessages.length >= MESSAGES_PER_PAGE);
-          
-          // Restore scroll position with a slight delay
-          requestAnimationFrame(() => {
-            const scrollElement = getScrollElement(scrollAreaRef);
-            if (scrollElement && scrollPositionRef.current) {
-              const newScrollTop = scrollElement.scrollHeight - 
-                scrollPositionRef.current.scrollHeight + 
-                scrollPositionRef.current.scrollTop;
-              
-              scrollElement.scrollTop = newScrollTop;
-            }
-          });
-        }, 10);
+        setMessages((prev) => [...olderMessages, ...prev]);
+        messagesRef.current = [...olderMessages, ...messagesRef.current];
+        setLastFetchedTimestamp(oldestTimestamp);
+        setHasMoreMessages(olderMessages.length >= MESSAGES_PER_PAGE);
+
+        requestAnimationFrame(() => {
+          const scrollElement = getScrollElement(scrollAreaRef);
+          if (scrollElement && scrollPositionRef.current) {
+            const newScrollTop =
+              scrollElement.scrollHeight -
+              scrollPositionRef.current.scrollHeight +
+              scrollPositionRef.current.scrollTop;
+
+            scrollElement.scrollTop = newScrollTop;
+          }
+        });
       } else {
         setHasMoreMessages(false);
       }
     } catch (error) {
       console.error("Error loading older messages:", error);
     } finally {
-      setTimeout(() => setIsLoadingMore(false), 300); // Add slight delay for smoother UX
+      setTimeout(() => setIsLoadingMore(false), 300);
     }
   };
 
   return {
     messagesRef,
-    loadOlderMessages
+    loadOlderMessages,
   };
 };
 

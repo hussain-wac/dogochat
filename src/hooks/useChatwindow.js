@@ -1,6 +1,7 @@
-import { useState, useRef, useMemo, useCallback } from "react";
-import { globalState } from "../jotai/globalState";
+import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
+import { useLocation } from "react-router-dom"; // Add this import
+import { globalState } from "../jotai/globalState";
 import { formatMessageTime } from "./utils/timeFormat";
 import { fetchChatId } from "./utils/chatOperations";
 import {
@@ -12,14 +13,13 @@ import useInfiniteScroll from "./useInfiniteScroll";
 import useReadMessages from "./useReadMessages";
 import useMessageScroll from "./useMessageScroll";
 import useMessageLoader from "./useMessageLoader";
-import { useEffect } from "react";
 import { db } from "../firebase";
 
 const useChatWindow = (initialUsername) => {
   const user = useAtomValue(globalState);
   const [scrollPositions, setScrollPositions] = useAtom(scrollPositionsAtom);
-  
-  // State management
+  const location = useLocation(); // Add this to track route changes
+
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -30,6 +30,7 @@ const useChatWindow = (initialUsername) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [lastFetchedTimestamp, setLastFetchedTimestamp] = useState(null);
+
   const scrollAreaRef = useRef(null);
 
   const {
@@ -53,7 +54,6 @@ const useChatWindow = (initialUsername) => {
     setMessages,
   });
 
-  // Message loader hook
   const { messagesRef, loadOlderMessages } = useMessageLoader({
     activeChat,
     db,
@@ -67,7 +67,6 @@ const useChatWindow = (initialUsername) => {
     scrollAreaRef
   });
 
-  // Infinite scroll hook - memoize dependencies to prevent unnecessary recalculations
   useInfiniteScroll({
     scrollAreaRef,
     activeChat,
@@ -77,7 +76,6 @@ const useChatWindow = (initialUsername) => {
     messages,
   });
 
-  // Read messages tracking hook
   useReadMessages({
     scrollAreaRef,
     activeChat,
@@ -87,7 +85,6 @@ const useChatWindow = (initialUsername) => {
     setNewMessagesCount
   });
 
-  // Message scroll behavior hook
   const { scrollToBottom } = useMessageScroll({
     scrollAreaRef,
     activeChat,
@@ -100,28 +97,31 @@ const useChatWindow = (initialUsername) => {
     isAtBottom
   });
 
-  // Set active chat and reset states - memoized to prevent unnecessary re-renders
   const handleSetActiveChat = useCallback((chatId) => {
-    if (activeChat) saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
-    setActiveChat(chatId);
+    if (!chatId) return;
+
+    if (activeChat) {
+      saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
+    }
+
+    console.log("[useChatWindow] Switching to chat:", chatId);
+
     setMessages([]);
+    setActiveChat(chatId);
     setHasMoreMessages(true);
     setLastFetchedTimestamp(null);
     setIsLoadingMore(false);
     setNewMessagesCount(0);
   }, [activeChat, scrollAreaRef, setScrollPositions]);
-  
-  // Send message with auto-scroll
+
   const sendMessage = useCallback(async (...args) => {
     const result = await handleSendMessage(...args);
-    // Use requestAnimationFrame for smoother scrolling
     requestAnimationFrame(() => {
       scrollToBottom();
     });
     return result;
   }, [handleSendMessage, scrollToBottom]);
 
-  // Group messages by date (memoized)
   const groupedMessages = useMemo(() => {
     if (!messages.length) return {};
     return messages.reduce((groups, msg) => {
@@ -132,13 +132,20 @@ const useChatWindow = (initialUsername) => {
     }, {});
   }, [messages]);
 
-  // Effect: Initialize chat with username
+  // Initial load of chatId and reset on route change
   useEffect(() => {
     if (!initialUsername || !user) return;
-    fetchChatId(db, user, initialUsername, handleSetActiveChat);
-  }, [initialUsername, user, handleSetActiveChat]);
 
-  // Effect: Save scroll position on unmount
+    console.log("[useChatWindow] Fetching chatId for:", initialUsername);
+
+    fetchChatId(db, user, initialUsername, (chatId) => {
+      if (chatId) {
+        handleSetActiveChat(chatId);
+        scrollToBottom(); // Ensure we scroll to the bottom after setting the chat
+      }
+    });
+  }, [initialUsername, user, handleSetActiveChat, location.pathname]); // Add location.pathname as a dependency
+
   useEffect(() => {
     return () => {
       if (activeChat) {
