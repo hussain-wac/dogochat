@@ -125,7 +125,7 @@ const useInfiniteScroll = ({
     createSentinel,
   ]);
 
-  return { sentinelRef };
+  return { sentinelRef ,isFetchingOlderMessages: isLoadingMore,};
 };
 
 export default useInfiniteScroll;

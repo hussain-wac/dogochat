@@ -30,7 +30,8 @@ function ChatWindow({ initialUsername, onBackClick }) {
     toggleSelectionMode,
     isLoadingMore,
     hasMoreMessages,
-    isAtBottom
+    isAtBottom,
+    isFetchingOlderMessages
   } = useChatWindow(initialUsername);
 
   const presence = useFirebasePresence(initialUsername);
@@ -99,6 +100,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
             chatId={activeChat}
             isLoadingMore={isLoadingMore}
             hasMoreMessages={hasMoreMessages}
+            isFetchingOlderMessages = {isFetchingOlderMessages}
           />
           <NewMessagesBadge
             scrollToBottom={scrollToBottom}

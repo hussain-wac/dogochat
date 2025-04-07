@@ -16,20 +16,29 @@ const ChatMessages = ({
   handleDeleteMessages,
   isSelectionMode = false,
   chatId,
+  isFetchingOlderMessages,
 }) => {
   const { typingUsersCount, typingUsersNames } = useTypingStatus(chatId);
   const prevMessagesRef = useRef({});
   const renderMessages = {};
   Object.entries(groupedMessages).forEach(([date, dayMessages]) => {
-    renderMessages[date] = dayMessages.filter((msg, index, self) =>
-      index === self.findIndex((m) => m.id === msg.id)
+    renderMessages[date] = dayMessages.filter(
+      (msg, index, self) => index === self.findIndex((m) => m.id === msg.id)
     );
   });
-
   return (
     <div className="flex flex-col flex-1 h-full gap-0">
-      <ScrollArea ref={scrollAreaRef} className="flex-1 px-2 sm:px-4 py-2 max-h-[80svh] sm:max-h-[80svh]">
+      <ScrollArea
+        ref={scrollAreaRef}
+        className="flex-1 px-2 sm:px-4 py-2 max-h-[80svh] sm:max-h-[80svh]"
+      >
         <div className="space-y-4 pb-6">
+          {isFetchingOlderMessages && (
+            <div className="flex justify-center py-2">
+              <div className="h-5 w-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+
           {isLoading
             ? [...Array(5)].map((_, index) => (
                 <div
@@ -67,7 +76,7 @@ const ChatMessages = ({
                   </div>
                   {dayMessages.map((msg) => {
                     const isSender = msg.sender === user.uid;
-                    
+
                     return (
                       <div
                         key={msg.id}
@@ -102,9 +111,15 @@ const ChatMessages = ({
                                   : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-tl-none border border-neutral-200 dark:border-neutral-700"
                               }
                             `}
-                            style={{ maxWidth: '100%' }}
+                            style={{ maxWidth: "100%" }}
                           >
-                            <div className="text-sm text-wrap break-words overflow-hidden" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+                            <div
+                              className="text-sm text-wrap break-words overflow-hidden"
+                              style={{
+                                overflowWrap: "break-word",
+                                wordBreak: "break-word",
+                              }}
+                            >
                               <LinkifyText text={msg.text} />
                             </div>
                           </div>
@@ -148,9 +163,18 @@ const ChatMessages = ({
                   </div>
                   <div className="flex items-center space-x-3 relative z-10">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
-                      <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                      <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                      <div
+                        className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.4s" }}
+                      ></div>
                     </div>
                     <span className="text-sm text-neutral-600 dark:text-neutral-400">
                       {typingUsersCount === 1

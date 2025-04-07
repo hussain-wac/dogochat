@@ -60,7 +60,10 @@ const useChatWindow = (initialUsername) => {
     scrollAreaRef
   });
 
-  useInfiniteScroll({
+  const {
+    sentinelRef,
+    isFetchingOlderMessages
+  } = useInfiniteScroll({
     scrollAreaRef,
     activeChat,
     isLoadingMore,
@@ -68,7 +71,6 @@ const useChatWindow = (initialUsername) => {
     loadOlderMessages,
     messages,
   });
-
   useReadMessages({
     scrollAreaRef,
     activeChat,
@@ -151,6 +153,7 @@ const useChatWindow = (initialUsername) => {
     hasMoreMessages,
     loadOlderMessages,
     isAtBottom,
+    isFetchingOlderMessages
   };
 };
 
