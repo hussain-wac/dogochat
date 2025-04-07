@@ -1,5 +1,5 @@
-// components/MessageInput.js
-import React from "react";
+// components/ChatWinowitems/MessageInput.js
+import React, { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -7,87 +7,117 @@ import {
   SmileIcon,
   PaperclipIcon,
   MicIcon,
+  XIcon,
 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import EmojiPicker from "emoji-picker-react";
 import useEmojipic from "../../../hooks/useImoji";
 import useTypingStatus from "../../../hooks/useTypingStatus";
+import { uploadImageToCloudinary } from "../../../hooks/utils/uploadToCloudinary";
 
 const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
   const { showEmojiPicker, setShowEmojiPicker, handleEmojiClick } = useEmojipic(setNewMessage);
   const { handleTyping } = useTypingStatus(chatId);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const fileInputRef = useRef();
+
+  const handleSend = () => {
+    if (selectedImage) return uploadAndSendImage();
+    if (!newMessage.trim()) return;
+    sendMessage(newMessage, "text");
+  };
+
+  const uploadAndSendImage = async () => {
+    setIsUploading(true);
+    try {
+      const url = await uploadImageToCloudinary(selectedImage.file);
+      sendMessage(url, "image");
+      setSelectedImage(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setSelectedImage({ file, preview: URL.createObjectURL(file) });
+  };
+
+  const removeImage = () => {
+    URL.revokeObjectURL(selectedImage.preview);
+    setSelectedImage(null);
+  };
 
   return (
-    <div className="p-3 border-t dark:border-neutral-700 bg-white dark:bg-neutral-900 shrink-0 absolute bottom-0 start-0 w-full h-auto">
-      <div className="flex items-center space-x-2 max-w-3xl mx-auto">
-        <div className="flex space-x-1">
-          <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              >
-                <SmileIcon className="h-5 w-5 text-neutral-500 hover:text-orange-500" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent 
-              side="bottom" 
-              className="w-auto p-0 border-none shadow-lg"
-              align="start"
-            >
-              <EmojiPicker onEmojiClick={handleEmojiClick} height={350} />
-            </PopoverContent>
-          </Popover>
+    <div className="p-3 border-t dark:border-neutral-700 bg-white dark:bg-neutral-900 absolute bottom-0 w-full">
+      <div className="max-w-3xl mx-auto">
+        {selectedImage && (
+          <div className="relative mb-2 w-fit">
+            <img src={selectedImage.preview} className="h-32 rounded-lg object-cover" />
+            <button onClick={removeImage} className="absolute top-1 right-1 bg-black bg-opacity-50 p-1 rounded-full">
+              <XIcon className="w-4 h-4 text-white" />
+            </button>
+          </div>
+        )}
+        <div className="flex items-center space-x-2">
+          <div className="flex space-x-1">
+            <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <SmileIcon className="h-5 w-5 text-neutral-500" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent side="bottom" className="p-0 border-none">
+                <EmojiPicker onEmojiClick={handleEmojiClick} height={300} />
+              </PopoverContent>
+            </Popover>
+
+            <Button variant="ghost" size="icon" onClick={() => fileInputRef.current.click()} className="rounded-full">
+              <PaperclipIcon className="h-5 w-5 text-neutral-500" />
+            </Button>
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+
+            <Button variant="ghost" size="icon" className="rounded-full hidden md:block">
+              <MicIcon className="h-5 w-5 text-neutral-500" />
+            </Button>
+          </div>
+
+          <Input
+            placeholder={
+              isUploading
+                ? "Uploading..."
+                : selectedImage
+                ? "Send image?"
+                : "Type a message..."
+            }
+            value={selectedImage ? "" : newMessage}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              handleTyping(e.target.value);
+            }}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            disabled={isUploading || !!selectedImage}
+            className="flex-1 rounded-full py-4"
+          />
 
           <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            onClick={handleSend}
+            disabled={(selectedImage && isUploading) || (!selectedImage && !newMessage.trim())}
+            className="rounded-full px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-500 text-white"
           >
-            <PaperclipIcon className="h-5 w-5 text-neutral-500 hover:text-orange-500" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 hidden md:block"
-          >
-            <MicIcon className="h-5 w-5 text-neutral-500 hover:text-orange-500" />
+            <SendHorizontalIcon className="h-4 w-4" />
           </Button>
         </div>
-
-        <Input
-          placeholder="Type a message..."
-          value={newMessage}
-          onChange={(e) => {
-            setNewMessage(e.target.value);
-            handleTyping(e.target.value);
-          }}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          className="flex-1 rounded-full py-5 bg-white text-black dark:text-neutral-50 dark:bg-black border-neutral-200 dark:border-neutral-700 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm"
-        />
-
-        <Button
-          onClick={sendMessage}
-          disabled={!newMessage.trim()}
-          className="
-            rounded-full px-4 py-2
-            bg-gradient-to-r from-orange-400 to-orange-500 
-            hover:from-orange-500 hover:to-orange-600
-            text-white font-medium
-            disabled:opacity-50 disabled:cursor-not-allowed
-            shadow-md hover:shadow-lg
-            transition-all duration-200
-          "
-        >
-          <SendHorizontalIcon className="h-4 w-4 mr-2" />
-          Send
-        </Button>
       </div>
     </div>
   );

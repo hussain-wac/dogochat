@@ -1,3 +1,4 @@
+// hooks/useMessageHandlers.js
 import { useAtomValue } from "jotai";
 import { globalState } from "../jotai/globalState";
 import {
@@ -21,18 +22,30 @@ const useMessageHandlers = ({
 }) => {
   const currentUser = useAtomValue(globalState);
 
-  const handleSendMessage = () => {
-    if (!newMessage || newMessage.trim() === "") return;
+  /**
+   * Send a text or image message.
+   * @param {string} content  Text content or image URL
+   * @param {"text"|"image"} type
+   */
+  const handleSendMessage = (content = newMessage, type = "text") => {
+    // If text, require non-empty trimmed content
+    if (type === "text" && (!content || content.trim() === "")) return;
     if (!activeChat || !currentUser?.uid) return;
-    
-    sendMessage(db, activeChat, newMessage, currentUser.uid, () => 
-      jumpToBottom(
-        scrollAreaRef,
-        setNewMessagesCount,
-        setIsAtBottom
-      )
+
+    // sendMessage signature: (db, chatId, content, type, userId, onComplete)
+    sendMessage(
+      db,
+      activeChat,
+      content,
+      type,
+      currentUser.uid,
+      () => jumpToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom)
     );
-    setNewMessage("");
+
+    // Clear the input only for text messages
+    if (type === "text") {
+      setNewMessage("");
+    }
   };
 
   const handleMarkMessageAsRead = (messageId) => {
