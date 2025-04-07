@@ -6,6 +6,7 @@ import { CheckIcon, Trash2Icon } from "lucide-react";
 import useTypingStatus from "../../../hooks/useTypingStatus";
 import { Button } from "@/components/ui/button";
 import { LinkifyText } from "./LinkifyText";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover components
 
 function ChatMessages({
   scrollAreaRef,
@@ -101,20 +102,42 @@ function ChatMessages({
                           }`}
                         >
                           {msg.type === "image" && msg.imageUrl ? (
-                            <img
-                              src={msg.imageUrl}
-                              alt="Sent image"
-                              className="rounded-lg max-h-60 w-auto object-cover"
-                              onError={(e) => {
-                                console.error(
-                                  `Failed to load image: ${msg.imageUrl}`
-                                );
-                                e.target.style.display = "none"; // Hide broken image
-                              }}
-                              onLoad={() =>
-                                console.log(`Image loaded: ${msg.imageUrl}`)
-                              } // Debug successful loads
-                            />
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <img
+                                  src={msg.imageUrl}
+                                  alt="Sent image"
+                                  className="rounded-lg max-h-60 w-auto object-cover cursor-pointer"
+                                  onError={(e) => {
+                                    console.error(
+                                      `Failed to load image: ${msg.imageUrl}`
+                                    );
+                                    e.target.style.display = "none";
+                                  }}
+                                  onLoad={() =>
+                                    console.log(`Image loaded: ${msg.imageUrl}`)
+                                  }
+                                />
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0 border-none bg-transparent shadow-none"
+                                align="center"
+                              >
+                                <div className="relative">
+                                  <img
+                                    src={msg.imageUrl}
+                                    alt="Image preview"
+                                    className="max-h-[80vh] max-w-[80vw] object-contain rounded-lg"
+                                    onError={(e) => {
+                                      console.error(
+                                        `Failed to load preview image: ${msg.imageUrl}`
+                                      );
+                                      e.target.style.display = "none";
+                                    }}
+                                  />
+                                </div>
+                              </PopoverContent>
+                            </Popover>
                           ) : (
                             <div
                               className="text-sm break-words"
