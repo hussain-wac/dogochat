@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useCallback, useEffect } from "react";
+import { useState, useRef, useMemo, useCallback, useEffect, use } from "react";
 import { useAtomValue } from "jotai";
 import { useLocation } from "react-router-dom";
 import { globalState } from "../jotai/globalState";
@@ -127,6 +127,10 @@ const useChatWindow = (initialUsername) => {
       }
     });
   }, [initialUsername, user, handleSetActiveChat, location.pathname]); 
+
+useEffect(() => {
+  console.log(isAtBottom);
+},[ isAtBottom]);
 
   return {
     username: initialUsername,

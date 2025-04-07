@@ -33,12 +33,6 @@ const ChatMessages = ({
         className="flex-1 px-2 sm:px-4 py-2 max-h-[80svh] sm:max-h-[80svh]"
       >
         <div className="space-y-4 pb-6">
-          {isFetchingOlderMessages && (
-            <div className="flex justify-center py-5">
-              <div className="h-5 w-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
-
           {isLoading
             ? [...Array(5)].map((_, index) => (
                 <div
@@ -61,6 +55,12 @@ const ChatMessages = ({
                 <div key={date} className="space-y-3">
                   <div className="text-center my-4 relative">
                     <span className="bg-white dark:bg-neutral-900 px-3 py-1 rounded-full text-xs font-medium text-neutral-500 uppercase tracking-wide shadow-sm">
+                      {/* {isFetchingOlderMessages && (
+                          <div className="flex justify-center py-5">
+                          <div className="h-5 w-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                        )} */}
+                    
                       {date === new Date().toDateString()
                         ? "Today"
                         : date ===
@@ -71,6 +71,7 @@ const ChatMessages = ({
                             month: "short",
                             day: "numeric",
                           })}
+
                     </span>
                     <div className="absolute left-0 right-0 top-1/2 border-t border-neutral-200 dark:border-neutral-700 -z-10" />
                   </div>
