@@ -109,7 +109,6 @@ function ChatWindow({ initialUsername, onBackClick }) {
             hasMoreMessages={hasMoreMessages}
           />
           <NewMessagesBadge
-            newMessagesCount={newMessagesCount}
             scrollToBottom={scrollToBottom}
           />
           <MessageInput

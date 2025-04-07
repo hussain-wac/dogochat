@@ -3,7 +3,8 @@ import {
   getScrollElement,
   checkIsAtBottom,
   jumpToBottom,
-  positionChat,
+  scrollToFirstUnread,
+  shouldScrollToBottomOnNewMessages,
 } from "./utils/scrollUtils";
 
 const useMessageScroll = ({
@@ -12,91 +13,86 @@ const useMessageScroll = ({
   messages,
   user,
   setIsAtBottom,
-  setNewMessagesCount,
-  isLoadingMore,
   isAtBottom,
 }) => {
   const initialPositionSet = useRef(false);
-  const previousMessagesLength = useRef(0);
   const isAutoScrollingRef = useRef(false);
+  const prevMessagesLengthRef = useRef(0);
 
-  // Detect if user scrolls to bottom or away
+  // Handle user scroll events
   useEffect(() => {
-    if (!scrollAreaRef.current || !activeChat) return;
-
     const scrollElement = getScrollElement(scrollAreaRef);
-    if (!scrollElement) return;
+    if (!scrollElement || !activeChat) return;
 
     const handleScroll = () => {
       if (isAutoScrollingRef.current) return;
-
-      const isBottom = checkIsAtBottom(scrollAreaRef);
-      setIsAtBottom(isBottom);
-      if (isBottom) setNewMessagesCount(0);
+      const atBottom = checkIsAtBottom(scrollAreaRef);
+      setIsAtBottom(atBottom);
     };
 
     scrollElement.addEventListener("scroll", handleScroll, { passive: true });
     return () => scrollElement.removeEventListener("scroll", handleScroll);
-  }, [activeChat, scrollAreaRef, setIsAtBottom, setNewMessagesCount]);
+  }, [activeChat, scrollAreaRef, setIsAtBottom]);
 
-  // Initial scroll position
+  // Initial scroll to first unread
   useEffect(() => {
-    if (!activeChat || !messages.length || !scrollAreaRef.current || initialPositionSet.current) return;
+    if (
+      !activeChat ||
+      !messages.length ||
+      !scrollAreaRef.current ||
+      initialPositionSet.current
+    )
+      return;
 
     requestAnimationFrame(() => {
       isAutoScrollingRef.current = true;
-      positionChat(
-        scrollAreaRef,
-        activeChat,
-        messages,
-        user,
-        setIsAtBottom,
-        setNewMessagesCount
-      );
+      scrollToFirstUnread(scrollAreaRef, messages, user);
       initialPositionSet.current = true;
 
       setTimeout(() => {
         isAutoScrollingRef.current = false;
       }, 100);
     });
-  }, [messages, activeChat, user, setIsAtBottom, setNewMessagesCount]);
+  }, [messages, activeChat, user]);
 
-  // Track message count but don't scroll
+  // Only scroll to bottom if user is already at bottom
   useEffect(() => {
-    if (!messages.length || !scrollAreaRef.current || !initialPositionSet.current) return;
+    if (!scrollAreaRef.current || !messages.length) return;
 
-    const previousLength = previousMessagesLength.current;
-    const currentLength = messages.length;
+    const prevLength = prevMessagesLengthRef.current;
+    const newLength = messages.length;
 
-    if (currentLength > previousLength && !isLoadingMore) {
-      const newCount = currentLength - previousLength;
-      previousMessagesLength.current = currentLength;
-
-      if (!isAtBottom) {
-        setNewMessagesCount(prev => prev + newCount);
-      }
-    } else if (!isLoadingMore) {
-      previousMessagesLength.current = currentLength;
+    if (
+      shouldScrollToBottomOnNewMessages(
+        scrollAreaRef,
+        isAtBottom,
+        prevLength,
+        newLength
+      )
+    ) {
+      scrollToBottom();
     }
-  }, [messages, isAtBottom, isLoadingMore, setNewMessagesCount]);
 
-  // Reset state on chat switch
+    prevMessagesLengthRef.current = newLength;
+  }, [messages, isAtBottom]);
+
+  // Reset scroll flags on chat switch
   useEffect(() => {
     initialPositionSet.current = false;
-    previousMessagesLength.current = 0;
+    prevMessagesLengthRef.current = 0;
   }, [activeChat]);
 
-  // Expose manual scroll to bottom
+  // Manual scroll-to-bottom
   const scrollToBottom = useCallback(() => {
     isAutoScrollingRef.current = true;
 
     requestAnimationFrame(() => {
-      jumpToBottom(scrollAreaRef, setNewMessagesCount, setIsAtBottom);
+      jumpToBottom(scrollAreaRef, setIsAtBottom);
       setTimeout(() => {
         isAutoScrollingRef.current = false;
       }, 100);
     });
-  }, [scrollAreaRef, setNewMessagesCount, setIsAtBottom]);
+  }, [scrollAreaRef, setIsAtBottom]);
 
   return {
     scrollToBottom,

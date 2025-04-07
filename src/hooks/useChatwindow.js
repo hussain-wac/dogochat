@@ -1,13 +1,9 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from "react";
-import { useAtom, useAtomValue } from "jotai";
-import { useLocation } from "react-router-dom"; // Add this import
+import { useAtomValue } from "jotai";
+import { useLocation } from "react-router-dom";
 import { globalState } from "../jotai/globalState";
 import { formatMessageTime } from "./utils/timeFormat";
 import { fetchChatId } from "./utils/chatOperations";
-import {
-  saveScrollPosition,
-  scrollPositionsAtom
-} from "./utils/scrollUtils";
 import useMessageHandlers from "./useMessageHandlers";
 import useInfiniteScroll from "./useInfiniteScroll";
 import useReadMessages from "./useReadMessages";
@@ -17,14 +13,12 @@ import { db } from "../firebase";
 
 const useChatWindow = (initialUsername) => {
   const user = useAtomValue(globalState);
-  const [scrollPositions, setScrollPositions] = useAtom(scrollPositionsAtom);
-  const location = useLocation(); // Add this to track route changes
+  const location = useLocation();
 
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isAtBottom, setIsAtBottom] = useState(true);
-  const [newMessagesCount, setNewMessagesCount] = useState(0);
   const [selectedMessages, setSelectedMessages] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -46,7 +40,6 @@ const useChatWindow = (initialUsername) => {
     setNewMessage,
     user,
     scrollAreaRef,
-    setNewMessagesCount,
     setIsAtBottom,
     selectedMessages,
     setSelectedMessages,
@@ -82,7 +75,6 @@ const useChatWindow = (initialUsername) => {
     messages,
     userId: user?.uid,
     handleMarkMessageAsRead,
-    setNewMessagesCount
   });
 
   const { scrollToBottom } = useMessageScroll({
@@ -90,9 +82,7 @@ const useChatWindow = (initialUsername) => {
     activeChat,
     messages,
     user,
-    scrollPositions,
     setIsAtBottom,
-    setNewMessagesCount,
     isLoadingMore,
     isAtBottom
   });
@@ -100,19 +90,12 @@ const useChatWindow = (initialUsername) => {
   const handleSetActiveChat = useCallback((chatId) => {
     if (!chatId) return;
 
-    if (activeChat) {
-      saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
-    }
-
-    // console.log("[useChatWindow] Switching to chat:", chatId);
-
     setMessages([]);
     setActiveChat(chatId);
     setHasMoreMessages(true);
     setLastFetchedTimestamp(null);
     setIsLoadingMore(false);
-    setNewMessagesCount(0);
-  }, [activeChat, scrollAreaRef, setScrollPositions]);
+  }, []);
 
   const sendMessage = useCallback(async (...args) => {
     const result = await handleSendMessage(...args);
@@ -132,26 +115,16 @@ const useChatWindow = (initialUsername) => {
     }, {});
   }, [messages]);
 
-  // Initial load of chatId and reset on route change
   useEffect(() => {
     if (!initialUsername || !user) return;
-
 
     fetchChatId(db, user, initialUsername, (chatId) => {
       if (chatId) {
         handleSetActiveChat(chatId);
-        scrollToBottom(); // Ensure we scroll to the bottom after setting the chat
+        scrollToBottom(); 
       }
     });
-  }, [initialUsername, user, handleSetActiveChat, location.pathname]); // Add location.pathname as a dependency
-
-  useEffect(() => {
-    return () => {
-      if (activeChat) {
-        saveScrollPosition(scrollAreaRef, activeChat, setScrollPositions);
-      }
-    };
-  }, [activeChat, setScrollPositions]);
+  }, [initialUsername, user, handleSetActiveChat, location.pathname]); 
 
   return {
     username: initialUsername,
@@ -163,7 +136,6 @@ const useChatWindow = (initialUsername) => {
     newMessage,
     scrollAreaRef,
     isLoading: !activeChat || messages.length === 0,
-    newMessagesCount,
     scrollToBottom,
     groupedMessages,
     formatMessageTime,
