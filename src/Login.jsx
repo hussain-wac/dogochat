@@ -15,7 +15,7 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 dark:from-neutral-900 dark:to-neutral-800 flex items-center justify-center px-4">
       <div className="bg-white dark:bg-neutral-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-neutral-100 dark:border-neutral-700">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-orange-500 dark:text-orange-400 mb-2">DogoChat</h1>
+          <h1 className="text-4xl font-bold text-orange-500 dark:text-orange-400 mb-2">Kabosu</h1>
           <p className="text-neutral-500 dark:text-neutral-400">Connect and chat with  everyone</p>
         </div>
 

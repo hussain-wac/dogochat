@@ -82,7 +82,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
   }
   return (
     <div className="bg-neutral-100 dark:bg-neutral-neutral">
-      <Card className="flex flex-col h-full rounded-none border-none shadow-none overflow-hidden">
+      <Card className="flex flex-col h-full rounded-none border-none shadow-none overflow-hidden gap-0 py-2">
         <ChatHeader
           username={username}
           isOpponentOnline={presence.isOnline}
