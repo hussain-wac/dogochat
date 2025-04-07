@@ -19,7 +19,7 @@ const ChatMessages = ({
   const { typingUsersCount, typingUsersNames } = useTypingStatus(chatId);
   return (
     <div className="flex flex-col flex-1 h-screen">
-      <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-2 max-h-[75vh]">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-2 max-h-[75svh]">
         <div className="space-y-4 pb-6 ">
           {isLoading
             ? [...Array(5)].map((_, index) => (
