@@ -27,8 +27,8 @@ const ChatMessages = ({
   });
 
   return (
-    <div className="flex flex-col flex-1 h-full">
-      <ScrollArea ref={scrollAreaRef} className="flex-1 px-2 sm:px-4 py-2 max-h-[70vh] sm:max-h-[75vh]">
+    <div className="flex flex-col flex-1 h-full gap-0">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 px-2 sm:px-4 py-2 max-h-[80svh] sm:max-h-[80svh]">
         <div className="space-y-4 pb-6">
           {isLoading
             ? [...Array(5)].map((_, index) => (
