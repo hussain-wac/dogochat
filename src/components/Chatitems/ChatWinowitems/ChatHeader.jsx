@@ -1,7 +1,7 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageCircleIcon, MoreVerticalIcon } from "lucide-react";
+import { MessageCircleIcon, MoreVerticalIcon, ArrowLeftIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import useTypingStatus from "../../../hooks/useTypingStatus";
 import { useChatUser } from "../../../hooks/useChatUser";
+import { Button } from "@/components/ui/button";
 
 const ChatHeader = ({
   isOpponentOnline,
@@ -17,8 +18,11 @@ const ChatHeader = ({
   toggleSelectionMode,
   isSelectionMode,
   chatId,
+  isMobile,
+  onBackClick,
 }) => {
-  const { username } = useParams(); // Extract username from URL
+  const { username } = useParams();
+  const navigate = useNavigate();
   const chatUser = useChatUser(username);
   const formatLastSeen = (timestamp) => {
     if (!timestamp) return "Last seen: Unknown";
@@ -30,7 +34,17 @@ const ChatHeader = ({
 
   return (
     <CardHeader className="border-b dark:border-neutral-700 h-16 min-h-[4rem] sticky top-0 z-10 bg-white dark:bg-neutral-900 px-4 py-3 shadow-sm flex items-center justify-between">
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-3 flex-1">
+        {isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBackClick}
+            className="mr-2"
+          >
+            <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+          </Button>
+        )}
         {chatUser?.photoURL ? (
           <img
             src={chatUser.photoURL}

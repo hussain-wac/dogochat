@@ -22,7 +22,7 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
   const { handleTyping } = useTypingStatus(chatId);
 
   return (
-    <div className="p-3 border-t dark:border-neutral-700 bg-white dark:bg-neutral-900 shrink-0">
+    <div className="p-3 border-t dark:border-neutral-700 bg-white dark:bg-neutral-900 shrink-0 absolute bottom-0 start-0 w-full h-auto">
       <div className="flex items-center space-x-2 max-w-3xl mx-auto">
         <div className="flex space-x-1">
           <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>

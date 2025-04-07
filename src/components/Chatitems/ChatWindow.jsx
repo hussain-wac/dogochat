@@ -56,7 +56,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
 
   if (!username || !activeChat) {
     return (
-      <div className="flex flex-col items-center justify-center text-neutral-500 h-full space-y-4 p-8 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
+      <div className="flex flex-col items-center justify-center text-neutral-500 h-screen space-y-4 p-8 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
         <div className="w-16 h-16 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center animate-pulse">
           <MessageCircleIcon className="h-8 w-8 text-neutral-400 dark:text-neutral-600" />
         </div>
@@ -80,9 +80,8 @@ function ChatWindow({ initialUsername, onBackClick }) {
       </div>
     );
   }
-
   return (
-    <div className="flex flex-col h-full bg-neutral-100 dark:bg-neutral-neutral">
+    <div className="bg-neutral-100 dark:bg-neutral-neutral">
       <Card className="flex flex-col h-full rounded-none border-none shadow-none overflow-hidden">
         <ChatHeader
           username={username}
@@ -94,7 +93,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
           onBackClick={handleBackToChats}
           chatId={activeChat}
         />
-        <CardContent className="flex flex-col flex-1 p-0 overflow-hidden bg-neutral-50 dark:bg-neutral-900 relative">
+        <CardContent className="p-0 overflow-hidden bg-neutral-50 dark:bg-neutral-900 relative pb-[50px] h-full">
           <ChatMessages
             scrollAreaRef={scrollAreaRef}
             isLoading={isLoading}
