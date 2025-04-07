@@ -150,6 +150,7 @@ const useChatWindow = (initialUsername) => {
     isLoadingMore,
     hasMoreMessages,
     loadOlderMessages,
+    isAtBottom,
   };
 };
 
