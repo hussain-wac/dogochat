@@ -1,9 +1,9 @@
-import { useRef, useEffect } from "react";
-import { getScrollElement } from "./utils/scrollUtils";
-import { observeMessages } from "./utils/intersectionUtils";
+// useReadMessages.js
+import { useRef, useEffect, useCallback } from "react";
 import { markMessageAsRead } from "./utils/chatOperations";
 
 const useReadMessages = ({
+  db,
   scrollAreaRef,
   activeChat,
   messages,
@@ -11,53 +11,97 @@ const useReadMessages = ({
   handleMarkMessageAsRead,
 }) => {
   const observerRef = useRef(null);
-  const hasMarkedRead = useRef(false);
-  useEffect(() => {
-    if (!activeChat || !messages.length || hasMarkedRead.current) return;
+  const markedMessages = useRef(new Set());
 
-    const unreadMessages = messages.filter(
-      (msg) => !msg.readBy?.includes(userId) && msg.sender !== userId
+  const markAsRead = useCallback(async (messageId) => {
+    if (!messageId || markedMessages.current.has(messageId)) return;
+
+    const success = await markMessageAsRead(db, activeChat, messageId, userId);
+    if (success) {
+      markedMessages.current.add(messageId);
+      handleMarkMessageAsRead?.(messageId);
+    }
+  }, [db, activeChat, userId, handleMarkMessageAsRead]);
+
+  // Initial marking of unread messages
+  useEffect(() => {
+    if (!db || !activeChat || !messages?.length || !userId) {
+      console.log("Skipping initial mark - missing data:", { db, activeChat, messages, userId });
+      return;
+    }
+
+    console.log(`Processing ${messages.length} messages for chat ${activeChat}`);
+    
+    const markUnreadMessages = async () => {
+      const unreadMessages = messages.filter(
+        (msg) => msg.id && !msg.readBy?.includes(userId) && msg.sender !== userId
+      );
+      
+      console.log(`Found ${unreadMessages.length} unread messages`);
+
+      for (const msg of unreadMessages) {
+        try {
+          await markAsRead(msg.id);
+        } catch (error) {
+          console.error(`Failed to mark message ${msg.id}:`, error);
+        }
+      }
+    };
+
+    markUnreadMessages();
+  }, [db, activeChat, messages, userId, markAsRead]);
+
+  // Intersection Observer for real-time marking
+  useEffect(() => {
+    if (!db || !scrollAreaRef.current || !messages?.length || !activeChat || !userId) {
+      console.log("Skipping observer setup - missing data");
+      return;
+    }
+
+    const scrollElement = scrollAreaRef.current;
+    
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const messageId = entry.target.dataset.messageId;
+            const message = messages.find(m => m.id === messageId);
+            
+            if (message && !message.readBy?.includes(userId) && message.sender !== userId) {
+              console.log(`Message ${messageId} became visible`);
+              markAsRead(messageId);
+            }
+          }
+        });
+      },
+      { 
+        root: scrollElement,
+        threshold: 0.7 
+      }
     );
 
-    if (unreadMessages.length > 0) {
-      Promise.all(
-        unreadMessages.map((msg) =>
-          markMessageAsRead(activeChat, msg.id, userId)
-        )
-      ).then(() => {
-        hasMarkedRead.current = true;
-      });
-    } else {
-      hasMarkedRead.current = true;
-    }
-  }, [messages, activeChat, userId]);
+    const messageElements = scrollElement.querySelectorAll("[data-message-id]");
+    console.log(`Observing ${messageElements.length} message elements`);
+    
+    messageElements.forEach((element) => {
+      observerRef.current.observe(element);
+    });
 
+    return () => {
+      observerRef.current?.disconnect();
+      console.log("Observer disconnected");
+    };
+  }, [db, activeChat, messages, userId, markAsRead]);
+
+  // Reset on chat change
   useEffect(() => {
-    hasMarkedRead.current = false;
+    markedMessages.current.clear();
+    console.log(`Reset marked messages for chat ${activeChat}`);
   }, [activeChat]);
 
-  // Effect: Setup message intersection observer for read tracking
-  useEffect(() => {
-    if (!scrollAreaRef.current || !messages.length || !activeChat) return;
-
-    if (observerRef.current) observerRef.current.disconnect();
-
-    observerRef.current = observeMessages(
-      messages,
-      userId,
-      handleMarkMessageAsRead,
-      scrollAreaRef
-    );
-
-    getScrollElement(scrollAreaRef)
-      ?.querySelectorAll("[data-message-id]")
-      .forEach((element) => observerRef.current.observe(element));
-
-    return () => observerRef.current?.disconnect();
-  }, [messages, activeChat, userId, handleMarkMessageAsRead]);
-
   return {
-    hasMarkedRead,
+    markedMessages: markedMessages.current,
+    markAsRead,
   };
 };
 
