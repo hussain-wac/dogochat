@@ -34,7 +34,7 @@ const ChatMessages = ({
       >
         <div className="space-y-4 pb-6">
           {isFetchingOlderMessages && (
-            <div className="flex justify-center py-2">
+            <div className="flex justify-center py-5">
               <div className="h-5 w-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
