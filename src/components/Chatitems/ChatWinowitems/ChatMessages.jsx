@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckIcon, Trash2Icon } from "lucide-react";
 import useTypingStatus from "../../../hooks/useTypingStatus";
-
+import { Button } from "@/components/ui/button";
+import { LinkifyText } from "./LinkifyText";
 const ChatMessages = ({
   scrollAreaRef,
   isLoading,
@@ -17,10 +18,18 @@ const ChatMessages = ({
   chatId,
 }) => {
   const { typingUsersCount, typingUsersNames } = useTypingStatus(chatId);
+  const prevMessagesRef = useRef({});
+  const renderMessages = {};
+  Object.entries(groupedMessages).forEach(([date, dayMessages]) => {
+    renderMessages[date] = dayMessages.filter((msg, index, self) =>
+      index === self.findIndex((m) => m.id === msg.id)
+    );
+  });
+
   return (
-    <div className="flex flex-col flex-1 h-screen">
-      <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-2 max-h-[75svh]">
-        <div className="space-y-4 pb-6 ">
+    <div className="flex flex-col flex-1 h-full">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 px-2 sm:px-4 py-2 max-h-[70vh] sm:max-h-[75vh]">
+        <div className="space-y-4 pb-6">
           {isLoading
             ? [...Array(5)].map((_, index) => (
                 <div
@@ -29,17 +38,17 @@ const ChatMessages = ({
                     index % 2 === 0 ? "justify-start" : "justify-end"
                   } mb-4`}
                 >
-                  <div className="flex flex-col max-w-[70%]">
+                  <div className="flex flex-col max-w-[75%] sm:max-w-[70%]">
                     <Skeleton
                       className={`h-12 ${
-                        index % 2 === 0 ? "w-64" : "w-48"
+                        index % 2 === 0 ? "w-48 sm:w-64" : "w-40 sm:w-48"
                       } rounded-xl`}
                     />
                     <Skeleton className="h-3 w-16 mt-1 ml-auto" />
                   </div>
                 </div>
               ))
-            : Object.entries(groupedMessages).map(([date, dayMessages]) => (
+            : Object.entries(renderMessages).map(([date, dayMessages]) => (
                 <div key={date} className="space-y-3">
                   <div className="text-center my-4 relative">
                     <span className="bg-white dark:bg-neutral-900 px-3 py-1 rounded-full text-xs font-medium text-neutral-500 uppercase tracking-wide shadow-sm">
@@ -58,6 +67,7 @@ const ChatMessages = ({
                   </div>
                   {dayMessages.map((msg) => {
                     const isSender = msg.sender === user.uid;
+                    
                     return (
                       <div
                         key={msg.id}
@@ -77,7 +87,7 @@ const ChatMessages = ({
                           </div>
                         )}
                         <div
-                          className={`flex flex-col max-w-[70%] ${
+                          className={`flex flex-col max-w-[75%] ${
                             selectedMessages.includes(msg.id)
                               ? "opacity-60"
                               : ""
@@ -85,16 +95,17 @@ const ChatMessages = ({
                         >
                           <div
                             className={`
-                          p-3 rounded-2xl shadow-sm
-                          ${
-                            isSender
-                              ? "bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-tr-none"
-                              : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-tl-none border border-neutral-200 dark:border-neutral-700"
-                          }
-                        `}
+                              p-3 rounded-2xl shadow-sm overflow-hidden
+                              ${
+                                isSender
+                                  ? "bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-tr-none"
+                                  : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-tl-none border border-neutral-200 dark:border-neutral-700"
+                              }
+                            `}
+                            style={{ maxWidth: '100%' }}
                           >
-                            <div className="text-sm whitespace-pre-wrap break-words">
-                              {msg.text}
+                            <div className="text-sm text-wrap break-words overflow-hidden" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+                              <LinkifyText text={msg.text} />
                             </div>
                           </div>
                           <div
@@ -130,27 +141,16 @@ const ChatMessages = ({
 
           {typingUsersCount > 0 && (
             <div className="flex justify-start mb-3">
-              <div className="flex flex-col max-w-[70%]">
+              <div className="flex flex-col max-w-[75%]">
                 <div className="p-3 rounded-2xl rounded-tl-none bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden relative">
-                  {/* Shimmer overlay */}
                   <div className="absolute inset-0 overflow-hidden">
                     <div className="shimmer-effect"></div>
                   </div>
-
                   <div className="flex items-center space-x-3 relative z-10">
                     <div className="flex space-x-1">
-                      <div
-                        className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0s" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.2s" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.4s" }}
-                      ></div>
+                      <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
+                      <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                      <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
                     </div>
                     <span className="text-sm text-neutral-600 dark:text-neutral-400">
                       {typingUsersCount === 1
@@ -171,42 +171,6 @@ const ChatMessages = ({
         </div>
       </ScrollArea>
 
-      {/* CSS for shimmer effect */}
-      <style jsx>{`
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-
-        .shimmer-effect {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.3) 50%,
-            rgba(255, 255, 255, 0) 100%
-          );
-          animation: shimmer 2s infinite;
-        }
-
-        :global(.dark) .shimmer-effect {
-          background: linear-gradient(
-            90deg,
-            rgba(50, 50, 50, 0) 0%,
-            rgba(50, 50, 50, 0.3) 50%,
-            rgba(50, 50, 50, 0) 100%
-          );
-        }
-      `}</style>
-
       {selectedMessages.length > 0 && (
         <div className="sticky bottom-0 p-3 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700 shadow-md">
           <div className="flex items-center justify-between max-w-3xl mx-auto">
@@ -216,13 +180,15 @@ const ChatMessages = ({
               </span>
               messages selected
             </span>
-            <button
+            <Button
               onClick={handleDeleteMessages}
-              className="text-red-500 flex items-center space-x-2 px-4 py-1.5 bg-red-50 dark:bg-red-900/20 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+              variant="destructive"
+              size="sm"
+              className="text-white flex items-center space-x-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 rounded-full px-4"
             >
               <Trash2Icon className="h-4 w-4" />
               <span className="font-medium">Unsend</span>
-            </button>
+            </Button>
           </div>
         </div>
       )}
