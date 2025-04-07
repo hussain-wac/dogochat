@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import useChatWindow from "../../hooks/useChatwindow";
 import ChatHeader from "./ChatWinowitems/ChatHeader";
@@ -19,7 +19,6 @@ function ChatWindow({ initialUsername, onBackClick }) {
     newMessage,
     scrollAreaRef,
     isLoading,
-    newMessagesCount,
     scrollToBottom,
     groupedMessages,
     formatMessageTime,
@@ -31,20 +30,13 @@ function ChatWindow({ initialUsername, onBackClick }) {
     toggleSelectionMode,
     isLoadingMore,
     hasMoreMessages,
+    isAtBottom,
+    isFetchingOlderMessages
   } = useChatWindow(initialUsername);
 
   const presence = useFirebasePresence(initialUsername);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isMobile = window.innerWidth < 768;
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const handleBackToChats = () => {
     if (onBackClick) {
@@ -80,6 +72,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
       </div>
     );
   }
+
   return (
     <div className="bg-neutral-100 dark:bg-neutral-neutral">
       <Card className="flex flex-col h-full rounded-none border-none shadow-none overflow-hidden gap-0 py-2">
@@ -107,17 +100,18 @@ function ChatWindow({ initialUsername, onBackClick }) {
             chatId={activeChat}
             isLoadingMore={isLoadingMore}
             hasMoreMessages={hasMoreMessages}
+            isFetchingOlderMessages = {isFetchingOlderMessages}
           />
           <NewMessagesBadge
-            newMessagesCount={newMessagesCount}
             scrollToBottom={scrollToBottom}
+            isAtBottom={isAtBottom}
           />
           <MessageInput
             newMessage={newMessage}
             setNewMessage={setNewMessage}
             sendMessage={sendMessage}
-            chatId={activeChat} 
-            isMobile={isMobile} 
+            chatId={activeChat}
+            isMobile={isMobile}
           />
         </CardContent>
       </Card>

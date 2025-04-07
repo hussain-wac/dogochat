@@ -15,6 +15,7 @@ const useInfiniteScroll = ({
   const sentinelRef = useRef(null);
   const scrollRestoreRef = useRef({ scrollTop: 0, scrollHeight: 0 });
   const prevMessagesLengthRef = useRef(messages.length);
+  const mutationObserverRef = useRef(null);
 
   const saveScrollPosition = () => {
     const scrollElement = getScrollElement(scrollAreaRef);
@@ -28,12 +29,22 @@ const useInfiniteScroll = ({
     const scrollElement = getScrollElement(scrollAreaRef);
     if (!scrollElement) return;
 
-    requestAnimationFrame(() => {
+    const attemptRestore = () => {
       const newScrollHeight = scrollElement.scrollHeight;
       const delta = newScrollHeight - scrollRestoreRef.current.scrollHeight;
-
       scrollElement.scrollTop = scrollRestoreRef.current.scrollTop + delta;
-    });
+
+      // Check if scroll was restored correctly
+      if (
+        Math.abs(
+          scrollElement.scrollTop - (scrollRestoreRef.current.scrollTop + delta)
+        ) > 1
+      ) {
+        requestAnimationFrame(attemptRestore);
+      }
+    };
+
+    requestAnimationFrame(attemptRestore);
   };
 
   const createSentinel = useCallback(() => {
@@ -55,39 +66,65 @@ const useInfiniteScroll = ({
     return sentinel;
   }, [scrollAreaRef]);
 
-  // Scroll listener (manual top check)
   useEffect(() => {
     const scrollElement = getScrollElement(scrollAreaRef);
     if (!scrollElement) return;
 
+    let timeout = null;
+
     const onScroll = () => {
-      if (
-        scrollElement.scrollTop <= SCROLL_THRESHOLD &&
-        hasMoreMessages &&
-        !isLoadingMore
-      ) {
-        saveScrollPosition();
-        loadOlderMessages();
-      }
+      if (timeout) clearTimeout(timeout);
+
+      timeout = setTimeout(() => {
+        if (
+          scrollElement.scrollTop <= SCROLL_THRESHOLD &&
+          hasMoreMessages &&
+          !isLoadingMore
+        ) {
+          saveScrollPosition();
+          loadOlderMessages();
+        }
+      }, 100);
     };
 
     scrollElement.addEventListener("scroll", onScroll);
-    return () => scrollElement.removeEventListener("scroll", onScroll);
+    return () => {
+      scrollElement.removeEventListener("scroll", onScroll);
+      if (timeout) clearTimeout(timeout);
+    };
   }, [scrollAreaRef, isLoadingMore, hasMoreMessages, loadOlderMessages]);
 
-  // Restore scroll after messages load
   useEffect(() => {
     const prevLen = prevMessagesLengthRef.current;
     const currLen = messages.length;
 
     if (currLen > prevLen && !isLoadingMore) {
-      restoreScrollPosition();
+      const scrollElement = getScrollElement(scrollAreaRef);
+      if (!scrollElement) return;
+
+      const container = scrollElement.querySelector(
+        "[data-messages-container]"
+      );
+      if (!container) return;
+
+      if (mutationObserverRef.current) {
+        mutationObserverRef.current.disconnect();
+      }
+
+      mutationObserverRef.current = new MutationObserver(() => {
+        restoreScrollPosition();
+        mutationObserverRef.current.disconnect();
+      });
+
+      mutationObserverRef.current.observe(container, {
+        childList: true,
+        subtree: true,
+      });
     }
 
     prevMessagesLengthRef.current = currLen;
   }, [messages, isLoadingMore]);
 
-  // Intersection observer (optional, for redundancy)
   useEffect(() => {
     if (!scrollAreaRef.current || !hasMoreMessages || !activeChat) return;
 
@@ -106,7 +143,7 @@ const useInfiniteScroll = ({
       },
       {
         root: scrollElement,
-        threshold: 1.0,
+        threshold: 2.0,
         rootMargin: "0px",
       }
     );
@@ -125,7 +162,7 @@ const useInfiniteScroll = ({
     createSentinel,
   ]);
 
-  return { sentinelRef };
+  return { sentinelRef, isFetchingOlderMessages: isLoadingMore };
 };
 
 export default useInfiniteScroll;

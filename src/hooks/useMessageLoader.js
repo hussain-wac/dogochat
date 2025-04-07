@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { fetchMessages, fetchOlderMessages } from "./utils/messageFetch";
 import { getScrollElement } from "./utils/scrollUtils";
 
-const MESSAGES_PER_PAGE = 10;
+const MESSAGES_PER_PAGE = 11;
 
 const useMessageLoader = ({
   activeChat,
