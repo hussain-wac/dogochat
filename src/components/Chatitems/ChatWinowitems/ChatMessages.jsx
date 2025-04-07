@@ -26,7 +26,7 @@ function ChatMessages({
   const renderMessages = {};
   Object.entries(groupedMessages).forEach(([date, msgs]) => {
     renderMessages[date] = msgs.filter(
-      (m, i, arr) => i === arr.findIndex(x => x.id === m.id)
+      (m, i, arr) => i === arr.findIndex((x) => x.id === m.id)
     );
   });
 
@@ -37,120 +37,129 @@ function ChatMessages({
         className="flex-1 px-2 sm:px-4 py-2 max-h-[80svh] sm:max-h-[80svh]"
       >
         <div className="space-y-4 pb-6">
-          {isLoading
-            ? [...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}
-                >
-                  <div className="flex flex-col max-w-[75%] sm:max-w-[70%]">
-                    <Skeleton
-                      className={`h-12 ${
-                        i % 2 === 0 ? "w-48 sm:w-64" : "w-40 sm:w-48"
-                      } rounded-xl`}
-                    />
-                    <Skeleton className="h-3 w-16 mt-1 ml-auto" />
-                  </div>
+          {isLoading ? (
+            [...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}
+              >
+                <div className="flex flex-col max-w-[75%] sm:max-w-[70%]">
+                  <Skeleton
+                    className={`h-12 ${
+                      i % 2 === 0 ? "w-48 sm:w-64" : "w-40 sm:w-48"
+                    } rounded-xl`}
+                  />
+                  <Skeleton className="h-3 w-16 mt-1 ml-auto" />
                 </div>
-              ))
-            : Object.entries(renderMessages).map(([date, msgs]) => (
-                <div key={date} className="space-y-3">
-                  {/* Date separator */}
-                  <div className="text-center my-4 relative">
-                    <span className="bg-white dark:bg-neutral-900 px-3 py-1 rounded-full text-xs font-medium text-neutral-500 uppercase tracking-wide shadow-sm">
-                      {date === new Date().toDateString()
-                        ? "Today"
-                        : date ===
-                          new Date(Date.now() - 86400000).toDateString()
-                        ? "Yesterday"
-                        : new Date(date).toLocaleDateString(undefined, {
-                            weekday: "long",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                    </span>
-                    <div className="absolute left-0 right-0 top-1/2 border-t border-neutral-200 dark:border-neutral-700 -z-10" />
-                  </div>
+              </div>
+            ))
+          ) : (
+            Object.entries(renderMessages).map(([date, msgs]) => (
+              <div key={date} className="space-y-3">
+                {/* Date separator */}
+                <div className="text-center my-4 relative">
+                  <span className="bg-white dark:bg-neutral-900 px-3 py-1 rounded-full text-xs font-medium text-neutral-500 uppercase tracking-wide shadow-sm">
+                    {date === new Date().toDateString()
+                      ? "Today"
+                      : date === new Date(Date.now() - 86400000).toDateString()
+                      ? "Yesterday"
+                      : new Date(date).toLocaleDateString(undefined, {
+                          weekday: "long",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                  </span>
+                  <div className="absolute left-0 right-0 top-1/2 border-t border-neutral-200 dark:border-neutral-700 -z-10" />
+                </div>
 
-                  {/* Messages for this date */}
-                  {msgs.map(msg => {
-                    const isSender = msg.sender === user.uid;
-                    return (
-                      <div
-                        key={msg.id}
-                        data-message-id={msg.id}
-                        className={`flex ${isSender ? "justify-end" : "justify-start"} mb-3`}
-                      >
-                        {isSelectionMode && isSender && (
-                          <div className="self-end mr-2">
-                            <input
-                              type="checkbox"
-                              checked={selectedMessages.includes(msg.id)}
-                              onChange={() => toggleMessageSelection(msg.id)}
-                              className="h-4 w-4 rounded border-neutral-300 text-orange-500 focus:ring-orange-500"
+                {/* Messages for this date */}
+                {msgs.map((msg) => {
+                  const isSender = msg.sender === user.uid;
+                  return (
+                    <div
+                      key={msg.id}
+                      data-message-id={msg.id}
+                      className={`flex ${isSender ? "justify-end" : "justify-start"} mb-3`}
+                    >
+                      {isSelectionMode && isSender && (
+                        <div className="self-end mr-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedMessages.includes(msg.id)}
+                            onChange={() => toggleMessageSelection(msg.id)}
+                            className="h-4 w-4 rounded border-neutral-300 text-orange-500 focus:ring-orange-500"
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex flex-col max-w-[75%]">
+                        <div
+                          className={`p-3 rounded-2xl shadow-sm overflow-hidden ${
+                            isSender
+                              ? "bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-tr-none"
+                              : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-tl-none border border-neutral-200 dark:border-neutral-700"
+                          }`}
+                        >
+                          {msg.type === "image" && msg.imageUrl ? (
+                            <img
+                              src={msg.imageUrl}
+                              alt="Sent image"
+                              className="rounded-lg max-h-60 w-auto object-cover"
+                              onError={(e) => {
+                                console.error(
+                                  `Failed to load image: ${msg.imageUrl}`
+                                );
+                                e.target.style.display = "none"; // Hide broken image
+                              }}
+                              onLoad={() =>
+                                console.log(`Image loaded: ${msg.imageUrl}`)
+                              } // Debug successful loads
                             />
-                          </div>
-                        )}
+                          ) : (
+                            <div
+                              className="text-sm break-words"
+                              style={{
+                                overflowWrap: "break-word",
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              <LinkifyText text={msg.text || ""} />
+                            </div>
+                          )}
+                        </div>
 
-                        <div className="flex flex-col max-w-[75%]">
-                          <div
-                            className={`p-3 rounded-2xl shadow-sm overflow-hidden ${
-                              isSender
-                                ? "bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-tr-none"
-                                : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-tl-none border border-neutral-200 dark:border-neutral-700"
-                            }`}
-                          >
-                            {msg.type === "image" && msg.imageUrl ? (
-                              <img
-                                src={msg.imageUrl}
-                                alt="Sent image"
-                                className="rounded-lg max-h-60 w-auto object-cover"
-                                onError={(e) => {
-                                  console.error(`Failed to load image: ${msg.imageUrl}`);
-                                  e.target.style.display = 'none'; // Hide broken image
-                                }}
-                              />
-                            ) : (
-                              <div
-                                className="text-sm break-words"
-                                style={{ overflowWrap: "break-word", wordBreak: "break-word" }}
-                              >
-                                <LinkifyText text={msg.text || ""} />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Timestamp & Status */}
-                          <div
-                            className={`text-xs text-neutral-500 flex items-center space-x-1 mt-1 ${
-                              isSender ? "justify-end" : "justify-start"
-                            }`}
-                          >
-                            <span>{formatMessageTime(msg.timestamp)}</span>
-                            {isSender && msg.status && (
-                              <>
-                                {msg.status === "read" ? (
-                                  <div className="flex space-x-0.5">
-                                    <CheckIcon className="h-3.5 w-3.5 text-orange-200" />
-                                    <CheckIcon className="h-3.5 w-3.5 text-orange-200 -ml-2" />
-                                  </div>
-                                ) : msg.status === "delivered" ? (
-                                  <div className="flex space-x-0.5">
-                                    <CheckIcon className="h-3.5 w-3.5 text-neutral-400" />
-                                    <CheckIcon className="h-3.5 w-3.5 text-neutral-400 -ml-2" />
-                                  </div>
-                                ) : (
-                                  <CheckIcon className="h-3.5 w-3.5 text-neutral-300" />
-                                )}
-                              </>
-                            )}
-                          </div>
+                        {/* Timestamp & Status */}
+                        <div
+                          className={`text-xs text-neutral-500 flex items-center space-x-1 mt-1 ${
+                            isSender ? "justify-end" : "justify-start"
+                          }`}
+                        >
+                          <span>{formatMessageTime(msg.timestamp)}</span>
+                          {isSender && msg.status && (
+                            <>
+                              {msg.status === "read" ? (
+                                <div className="flex space-x-0.5">
+                                  <CheckIcon className="h-3.5 w-3.5 text-orange-200" />
+                                  <CheckIcon className="h-3.5 w-3.5 text-orange-200 -ml-2" />
+                                </div>
+                              ) : msg.status === "delivered" ? (
+                                <div className="flex space-x-0.5">
+                                  <CheckIcon className="h-3.5 w-3.5 text-neutral-400" />
+                                  <CheckIcon className="h-3.5 w-3.5 text-neutral-400 -ml-2" />
+                                </div>
+                              ) : (
+                                <CheckIcon className="h-3.5 w-3.5 text-neutral-300" />
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              ))}
+                    </div>
+                  );
+                })}
+              </div>
+            ))
+          )}
 
           {/* Typing indicator */}
           {typingUsersCount > 0 && (
@@ -159,7 +168,7 @@ function ChatMessages({
                 <div className="p-3 rounded-2xl rounded-tl-none bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm relative overflow-hidden">
                   <div className="absolute inset-0 shimmer-effect" />
                   <div className="relative z-10 flex items-center space-x-3">
-                    {[0, 1, 2].map(i => (
+                    {[0, 1, 2].map((i) => (
                       <div
                         key={i}
                         className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"

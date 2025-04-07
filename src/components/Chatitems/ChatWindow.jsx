@@ -1,3 +1,4 @@
+// src/components/ChatWindow.jsx
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import useChatWindow from "../../hooks/useChatwindow";
@@ -9,6 +10,8 @@ import { MessageCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useFirebasePresence } from "../../hooks/useFirebasePresence";
+import useReadMessages from "../../hooks/useReadMessages"; // Import the hook
+import { db } from "../../firebase"; // Import your Firestore instance
 
 function ChatWindow({ initialUsername, onBackClick }) {
   const {
@@ -31,12 +34,24 @@ function ChatWindow({ initialUsername, onBackClick }) {
     isLoadingMore,
     hasMoreMessages,
     isAtBottom,
-    isFetchingOlderMessages
+    isFetchingOlderMessages,
   } = useChatWindow(initialUsername);
 
   const presence = useFirebasePresence(initialUsername);
   const isMobile = window.innerWidth < 768;
   const navigate = useNavigate();
+
+  // Integrate useReadMessages
+  const { markAsRead } = useReadMessages({
+    db, // Your Firestore instance
+    scrollAreaRef,
+    activeChat,
+    messages: Object.values(groupedMessages).flat(), // Flatten grouped messages
+    userId: user?.uid,
+    handleMarkMessageAsRead: (messageId) => {
+      console.log(`Marked message ${messageId} as read`);
+    },
+  });
 
   const handleBackToChats = () => {
     if (onBackClick) {
@@ -100,7 +115,7 @@ function ChatWindow({ initialUsername, onBackClick }) {
             chatId={activeChat}
             isLoadingMore={isLoadingMore}
             hasMoreMessages={hasMoreMessages}
-            isFetchingOlderMessages = {isFetchingOlderMessages}
+            isFetchingOlderMessages={isFetchingOlderMessages}
           />
           <NewMessagesBadge
             scrollToBottom={scrollToBottom}
