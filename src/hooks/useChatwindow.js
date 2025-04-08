@@ -128,10 +128,6 @@ const useChatWindow = (initialUsername) => {
     });
   }, [initialUsername, user, handleSetActiveChat, location.pathname]); 
 
-useEffect(() => {
-  console.log(isAtBottom);
-},[ isAtBottom]);
-
   return {
     username: initialUsername,
     activeChat,

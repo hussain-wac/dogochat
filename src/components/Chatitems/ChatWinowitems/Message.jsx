@@ -48,18 +48,30 @@ function Message({
           )}
         </div>
 
-        <div className={`text-xs text-neutral-500 mt-1 ${isSender ? "text-right" : "text-left"}`}>
+        <div
+          className={`text-xs text-neutral-500 mt-1 ${
+            isSender ? "text-right" : "text-left"
+          }`}
+        >
           <span>{formatMessageTime(msg.timestamp)}</span>
           {isSender && msg.status && (
-            <>
-              {msg.status === "read" ? (
-                <CheckIcon className="inline h-3.5 w-3.5 text-orange-200 ml-1" />
-              ) : msg.status === "delivered" ? (
-                <CheckIcon className="inline h-3.5 w-3.5 text-neutral-400 ml-1" />
-              ) : (
-                <CheckIcon className="inline h-3.5 w-3.5 text-neutral-300 ml-1" />
+            <span className="inline-flex items-center ml-1">
+              {msg.status === "sent" && (
+                <CheckIcon className="h-3.5 w-3.5 text-neutral-400" />
               )}
-            </>
+              {msg.status === "delivered" && (
+                <>
+                  <CheckIcon className="h-3.5 w-3.5 text-neutral-400" />
+                  <CheckIcon className="h-3.5 w-3.5 text-neutral-400 -ml-2" />
+                </>
+              )}
+              {msg.status === "read" && (
+                <>
+                  <CheckIcon className="h-3.5 w-3.5 text-orange-500" />
+                  <CheckIcon className="h-3.5 w-3.5 text-orange-500 -ml-2" />
+                </>
+              )}
+            </span>
           )}
         </div>
       </div>
