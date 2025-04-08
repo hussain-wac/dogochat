@@ -1,7 +1,16 @@
+
 import React, { useCallback, useState } from "react";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { uploadImageToCloudinary } from "../../hooks/utils/uploadToCloudinary";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 async function getCroppedImg(image, crop, rotation = 0) {
   const radians = (rotation * Math.PI) / 180;
@@ -16,7 +25,6 @@ async function getCroppedImg(image, crop, rotation = 0) {
   const cropWidth = (crop?.width || image.width) * scaleX;
   const cropHeight = (crop?.height || image.height) * scaleY;
 
-  // Compute rotated bounding box size
   const sin = Math.abs(Math.sin(radians));
   const cos = Math.abs(Math.cos(radians));
   const rotatedWidth = cropWidth * cos + cropHeight * sin;
@@ -83,17 +91,19 @@ function ImageEditorModal({ open, image, onClose, sendMessage }) {
   if (!open || !image) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
-        <h2 className="text-lg font-semibold mb-4">Edit Image</h2>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-lg max-h-[95vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Image</DialogTitle>
+        </DialogHeader>
 
         <div className="flex flex-col gap-4">
           <ReactCrop
             crop={crop}
             onChange={(newCrop) => setCrop(newCrop)}
             onComplete={(c) => setCompletedCrop(c)}
+            keepSelection
             className="max-h-[60vh] overflow-auto"
-            keepSelection={true}
           >
             <img
               src={image.preview}
@@ -105,56 +115,54 @@ function ImageEditorModal({ open, image, onClose, sendMessage }) {
           </ReactCrop>
 
           {completedCrop && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground text-center">
               Selection: {Math.round(completedCrop.width)} ×{" "}
               {Math.round(completedCrop.height)}px
             </p>
           )}
 
           <div className="flex justify-center gap-4 items-center">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setRotation((r) => (r - 90 + 360) % 360)}
-              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded"
               disabled={isProcessing}
             >
               🔄 Rotate Left
-            </button>
-            <span className="text-sm text-gray-600">{rotation}°</span>
-            <button
+            </Button>
+            <span className="text-sm text-muted-foreground">{rotation}°</span>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setRotation((r) => (r + 90) % 360)}
-              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded"
               disabled={isProcessing}
             >
               🔁 Rotate Right
-            </button>
+            </Button>
           </div>
 
-          <div className="flex justify-end gap-2 mt-2">
-            <button
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="ghost"
               onClick={handleReset}
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md"
               disabled={isProcessing}
             >
               Reset
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="destructive"
               onClick={onClose}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
               disabled={isProcessing}
             >
               Cancel
-            </button>
-            <button
-              onClick={handleApply}
-              disabled={isProcessing}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md disabled:bg-gray-400"
-            >
+            </Button>
+            <Button onClick={handleApply} disabled={isProcessing}>
               {isProcessing ? "Sending..." : "Apply"}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
