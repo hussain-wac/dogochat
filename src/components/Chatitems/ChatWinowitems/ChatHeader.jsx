@@ -97,7 +97,6 @@ const ChatHeader = ({
           </div>
         </div>
         
-        {/* Dropdown menu - stays at the end */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
