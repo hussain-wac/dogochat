@@ -8,11 +8,13 @@ import {
   CameraIcon,
   MicIcon,
   XIcon,
+  PencilIcon,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import EmojiPicker from "emoji-picker-react";
 import useEmojipic from "../../../hooks/useImoji";
 import useTypingStatus from "../../../hooks/useTypingStatus";
+import { uploadImageToCloudinary } from "../../../hooks/utils/uploadToCloudinary";
 
 const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
   const { showEmojiPicker, setShowEmojiPicker, handleEmojiClick } = useEmojipic(setNewMessage);
@@ -23,10 +25,25 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
 
   const fileInputRef = useRef();
 
-  const handleSend = () => {
-    if (!newMessage.trim()) return;
-    sendMessage(newMessage, "text");
-    setNewMessage("");
+  const handleSend = async () => {
+    // Send text message
+    if (newMessage.trim()) {
+      sendMessage(newMessage, "text");
+      setNewMessage("");
+      return;
+    }
+
+    // Send image if selected and not editing
+    if (selectedImage && !isEditorOpen) {
+      try {
+        const url = await uploadImageToCloudinary(selectedImage.file);
+        sendMessage(url, "image");
+      } catch (error) {
+        console.error("Image upload failed:", error);
+      } finally {
+        removeImage();
+      }
+    }
   };
 
   const handleFileChange = (e) => {
@@ -34,7 +51,6 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
     if (!file) return;
     const preview = URL.createObjectURL(file);
     setSelectedImage({ file, preview });
-    setIsEditorOpen(true);
     e.target.value = null; // Reset file input to allow re-selection
   };
 
@@ -46,6 +62,12 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
     setIsEditorOpen(false);
   };
 
+  const handleEditClick = () => {
+    if (selectedImage) {
+      setIsEditorOpen(true);
+    }
+  };
+
   return (
     <>
       {/* Image editor modal */}
@@ -53,12 +75,15 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
         open={isEditorOpen}
         image={selectedImage}
         onClose={removeImage}
-        sendMessage={sendMessage} // Pass sendMessage to handle sending directly
+        sendMessage={(url) => {
+          sendMessage(url, "image");
+          removeImage();
+        }}
       />
 
       <div className="p-3 border-t dark:border-neutral-700 bg-white dark:bg-neutral-900 absolute bottom-0 w-full">
         <div className="max-w-3xl mx-auto">
-          {/* Preview thumbnail */}
+          {/* Preview thumbnail with Edit button */}
           {selectedImage && !isEditorOpen && (
             <div className="relative mb-2 w-fit">
               <img
@@ -66,12 +91,20 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
                 className="h-32 rounded-lg object-cover"
                 alt="Selected preview"
               />
-              <button
-                onClick={removeImage}
-                className="absolute top-1 right-1 bg-black bg-opacity-50 p-1 rounded-full"
-              >
-                <XIcon className="w-4 h-4 text-white" />
-              </button>
+              <div className="absolute top-1 right-1 flex gap-1">
+                <button
+                  onClick={handleEditClick}
+                  className="bg-black bg-opacity-50 p-1 rounded-full"
+                >
+                  <PencilIcon className="w-4 h-4 text-white" />
+                </button>
+                <button
+                  onClick={removeImage}
+                  className="bg-black bg-opacity-50 p-1 rounded-full"
+                >
+                  <XIcon className="w-4 h-4 text-white" />
+                </button>
+              </div>
             </div>
           )}
 
@@ -108,7 +141,7 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
                 onChange={handleFileChange}
               />
 
-              {/* Mic icon (unused) */}
+              {/* Mic icon (placeholder) */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -133,7 +166,7 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
             {/* Send button */}
             <Button
               onClick={handleSend}
-              disabled={!newMessage.trim()}
+              disabled={!newMessage.trim() && !selectedImage}
               className="rounded-full px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-500 text-white"
             >
               <SendHorizontalIcon className="h-4 w-4" />
