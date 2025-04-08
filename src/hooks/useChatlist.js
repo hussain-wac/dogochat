@@ -77,6 +77,7 @@ const fetchChatList = (uid, mutate) => {
               const messageData = {
                 text: lastMessageDoc.data().text,
                 timestamp: lastMessageDoc.data().timestamp.toDate(),
+                type : lastMessageDoc.data().type,
               };
               
               if (!previousMessageIds.has(messageId) && 

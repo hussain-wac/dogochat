@@ -27,5 +27,4 @@ const useMessageScroll = ({ scrollAreaRef }) => {
     isAutoScrollingRef,
   };
 };
-
 export default useMessageScroll;
