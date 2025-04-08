@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from "react";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -14,7 +13,6 @@ import { Button } from "@/components/ui/button";
 
 async function getCroppedImg(image, crop, rotation = 0) {
   const radians = (rotation * Math.PI) / 180;
-
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Failed to get canvas context");
@@ -56,7 +54,7 @@ async function getCroppedImg(image, crop, rotation = 0) {
   });
 }
 
-function ImageEditorModal({ open, image, onClose, sendMessage }) {
+function ImageEditorModal({ open, image, onClose, onComplete }) {
   const [crop, setCrop] = useState(null);
   const [completedCrop, setCompletedCrop] = useState(null);
   const [imgRef, setImgRef] = useState(null);
@@ -68,12 +66,11 @@ function ImageEditorModal({ open, image, onClose, sendMessage }) {
   }, []);
 
   const handleApply = async () => {
-    if (!imgRef || !sendMessage) return;
+    if (!imgRef || !onComplete) return;
     setIsProcessing(true);
     try {
       const croppedFile = await getCroppedImg(imgRef, completedCrop, rotation);
-      const url = await uploadImageToCloudinary(croppedFile);
-      sendMessage(url, "image");
+      onComplete(croppedFile);
       onClose();
     } catch (error) {
       console.error("Error cropping and sending image:", error);
@@ -142,22 +139,14 @@ function ImageEditorModal({ open, image, onClose, sendMessage }) {
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button
-              variant="ghost"
-              onClick={handleReset}
-              disabled={isProcessing}
-            >
+            <Button variant="ghost" onClick={handleReset} disabled={isProcessing}>
               Reset
             </Button>
-            <Button
-              variant="destructive"
-              onClick={onClose}
-              disabled={isProcessing}
-            >
+            <Button variant="destructive" onClick={onClose} disabled={isProcessing}>
               Cancel
             </Button>
             <Button onClick={handleApply} disabled={isProcessing}>
-              {isProcessing ? "Sending..." : "Apply"}
+              {isProcessing ? "Processing..." : "Apply"}
             </Button>
           </div>
         </div>
