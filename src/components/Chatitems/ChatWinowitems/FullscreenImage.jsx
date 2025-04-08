@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   XIcon,
   RotateCwIcon,
@@ -6,42 +6,17 @@ import {
   ShareIcon,
   Trash2Icon,
 } from "lucide-react";
+import { useFullscreenImage } from "../../../hooks/useFullscreenImageop";
 
 function FullscreenImage({ image, onClose, onDelete, formatMessageTime }) {
-  const [rotation, setRotation] = useState(0);
+  const {
+    rotation,
+    handleRotate,
+    handleDownload,
+    handleShare,
+  } = useFullscreenImage(image);
 
   if (!image) return null;
-
-  const handleRotate = () => {
-    setRotation((prev) => (prev + 90) % 360);
-  };
-
-  const handleDownload = () => {
-    fetch(image.url)
-      .then((res) => res.blob())
-      .then((blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `image-${image.id}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      })
-      .catch((err) => {
-        console.error("Download failed:", err);
-        alert("Failed to download image. Try again.");
-      });
-  };
-
-  const handleShare = () => {
-    const subject = encodeURIComponent("Check out this image from our chat");
-    const body = encodeURIComponent(
-      `I wanted to share this image with you: ${image.url}`
-    );
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col">
