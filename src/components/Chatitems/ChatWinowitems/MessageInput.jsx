@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import {
   SendHorizontalIcon,
   SmileIcon,
-  PaperclipIcon,
+  CameraIcon,
   MicIcon,
-  XIcon,
+  XIcon
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import EmojiPicker from "emoji-picker-react";
@@ -20,6 +20,7 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
   const { handleTyping } = useTypingStatus(chatId);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
   const fileInputRef = useRef();
 
   const handleSend = () => {
@@ -44,20 +45,28 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setSelectedImage({ file, preview: URL.createObjectURL(file) });
+    const preview = URL.createObjectURL(file);
+    setSelectedImage({ file, preview });
+    setImagePreviewOpen(true);
   };
 
   const removeImage = () => {
-    URL.revokeObjectURL(selectedImage.preview);
+    if (selectedImage?.preview) {
+      URL.revokeObjectURL(selectedImage.preview);
+    }
     setSelectedImage(null);
+    setImagePreviewOpen(false);
   };
 
   return (
     <div className="p-3 border-t dark:border-neutral-700 bg-white dark:bg-neutral-900 absolute bottom-0 w-full">
       <div className="max-w-3xl mx-auto">
-        {selectedImage && (
+        {selectedImage && !imagePreviewOpen && (
           <div className="relative mb-2 w-fit">
-            <img src={selectedImage.preview} className="h-32 rounded-lg object-cover" />
+            <img 
+              src={selectedImage.preview} 
+              className="h-32 rounded-lg object-cover" 
+            />
             <button onClick={removeImage} className="absolute top-1 right-1 bg-black bg-opacity-50 p-1 rounded-full">
               <XIcon className="w-4 h-4 text-white" />
             </button>
@@ -76,9 +85,34 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
               </PopoverContent>
             </Popover>
 
-            <Button variant="ghost" size="icon" onClick={() => fileInputRef.current.click()} className="rounded-full">
-              <PaperclipIcon className="h-5 w-5 text-neutral-500" />
-            </Button>
+            <Popover open={imagePreviewOpen} onOpenChange={setImagePreviewOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={() => fileInputRef.current.click()} className="rounded-full">
+                  <CameraIcon className="h-5 w-5 text-neutral-500" />
+                </Button>
+              </PopoverTrigger>
+              {selectedImage && (
+                <PopoverContent className="w-72 p-0 overflow-hidden rounded-lg bg-white shadow-lg">
+                  <div className="flex flex-col">
+                    <div className="w-full h-full">
+                      <img 
+                        src={selectedImage.preview} 
+                        className="w-full aspect-square object-cover"
+                      />
+                    </div>
+                    <div className="flex justify-end p-2 border-t">
+                      <button 
+                        onClick={removeImage} 
+                        className="flex items-center gap-1 px-3 py-1 text-xs text-white bg-red-500 hover:bg-red-600 rounded"
+                      >
+                        <XIcon className="h-3 w-3" />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              )}
+            </Popover>
             <input
               type="file"
               accept="image/*"
