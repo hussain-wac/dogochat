@@ -83,53 +83,64 @@ function ChatMessages({
 
   return (
     <div className="flex flex-col flex-1 h-full">
-   {fullscreenImage && (
-  <div className="fixed inset-0 z-50 bg-black flex flex-col">
-    <div className="flex items-center justify-between p-4 bg-black bg-opacity-80">
-      <button onClick={closeFullscreenImage} className="text-white">
-        <XIcon className="h-6 w-6" />
-      </button>
-      <div className="text-white text-xs">
-        {formatMessageTime(fullscreenImage.timestamp)}
-      </div>
-    </div>
-    <div className="flex-1 flex items-center justify-center overflow-auto p-4 bg-black">
-      <img
-        src={fullscreenImage.url}
-        alt="Full size"
-        className="max-h-[80vh] max-w-[90vw] object-contain mx-auto"
-        style={{ transform: `rotate(${imageRotations[fullscreenImage.id] || 0}deg)` }}
-      />
-    </div>
-    <div className="p-4 bg-black bg-opacity-80 flex justify-around">
-      <button onClick={() => handleRotateImage(fullscreenImage.id)} className="text-white flex flex-col items-center">
-        <RotateCwIcon className="h-6 w-6 mb-1" />
-        <span className="text-xs">Rotate</span>
-      </button>
-      <button onClick={() => handleDownloadImage(fullscreenImage.url, fullscreenImage.id)} className="text-white flex flex-col items-center">
-        <DownloadIcon className="h-6 w-6 mb-1" />
-        <span className="text-xs">Download</span>
-      </button>
-      <button onClick={() => handleShareImage(fullscreenImage.url)} className="text-white flex flex-col items-center">
-        <ShareIcon className="h-6 w-6 mb-1" />
-        <span className="text-xs">Share</span>
-      </button>
-      {fullscreenImage.isSender && (
-        <button
-          onClick={() => {
-            toggleMessageSelection(fullscreenImage.id);
-            closeFullscreenImage();
-          }}
-          className="text-red-500 flex flex-col items-center"
-        >
-          <Trash2Icon className="h-6 w-6 mb-1" />
-          <span className="text-xs">Delete</span>
-        </button>
+      {fullscreenImage && (
+        <div className="fixed inset-0 z-50 flex flex-col">
+          {/* Blurred background */}
+          <div className="absolute inset-0">
+            <img
+              src={fullscreenImage.url}
+              alt="Blurred background"
+              className="w-full h-full object-cover filter blur-lg"
+            />
+            <div className="absolute inset-0 bg-black opacity-50" />
+          </div>
+          {/* Top bar */}
+          <div className="relative z-10 flex items-center justify-between p-4">
+            <button onClick={closeFullscreenImage} className="text-white">
+              <XIcon className="h-6 w-6" />
+            </button>
+            <div className="text-white text-xs">
+              {formatMessageTime(fullscreenImage.timestamp)}
+            </div>
+          </div>
+          {/* Fullscreen image */}
+          <div className="relative z-10 flex-1 flex items-center justify-center overflow-auto p-4">
+            <img
+              src={fullscreenImage.url}
+              alt="Full size"
+              className="max-h-[80vh] max-w-[90vw] object-contain mx-auto"
+              style={{ transform: `rotate(${imageRotations[fullscreenImage.id] || 0}deg)` }}
+            />
+          </div>
+          {/* Control buttons */}
+          <div className="relative z-10 p-4 flex justify-around">
+            <button onClick={() => handleRotateImage(fullscreenImage.id)} className="text-white flex flex-col items-center">
+              <RotateCwIcon className="h-6 w-6 mb-1" />
+              <span className="text-xs">Rotate</span>
+            </button>
+            <button onClick={() => handleDownloadImage(fullscreenImage.url, fullscreenImage.id)} className="text-white flex flex-col items-center">
+              <DownloadIcon className="h-6 w-6 mb-1" />
+              <span className="text-xs">Download</span>
+            </button>
+            <button onClick={() => handleShareImage(fullscreenImage.url)} className="text-white flex flex-col items-center">
+              <ShareIcon className="h-6 w-6 mb-1" />
+              <span className="text-xs">Share</span>
+            </button>
+            {fullscreenImage.isSender && (
+              <button
+                onClick={() => {
+                  toggleMessageSelection(fullscreenImage.id);
+                  closeFullscreenImage();
+                }}
+                className="text-red-500 flex flex-col items-center"
+              >
+                <Trash2Icon className="h-6 w-6 mb-1" />
+                <span className="text-xs">Delete</span>
+              </button>
+            )}
+          </div>
+        </div>
       )}
-    </div>
-  </div>
-)}
-
 
       <ScrollArea
         ref={scrollAreaRef}
@@ -194,14 +205,6 @@ function ChatMessages({
                                   />
                                 </div>
                               </PopoverTrigger>
-                              <PopoverContent className="w-64 h-64 flex items-center justify-center p-0">
-                                <img
-                                  src={msg.imageUrl}
-                                  alt="preview"
-                                  className="w-full h-full object-contain rounded-lg"
-                                  style={{ transform: `rotate(${rotation}deg)` }}
-                                />
-                              </PopoverContent>
                             </Popover>
                           ) : (
                             <div className="text-sm break-words">
