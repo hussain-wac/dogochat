@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { uploadImageToCloudinary } from "../../hooks/utils/uploadToCloudinary";
 
 import {
   Dialog,
