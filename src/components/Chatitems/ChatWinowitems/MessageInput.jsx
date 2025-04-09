@@ -229,8 +229,8 @@ const MessageInput = ({ newMessage, setNewMessage, sendMessage, chatId }) => {
                 onMouseUp={handleStopRecording}
                 onTouchStart={handleStartRecording}
                 onTouchEnd={handleStopRecording}
-                onMouseLeave={handleStopRecording} // Stop if mouse leaves button
-                onTouchCancel={handleStopRecording} // Stop if touch is interrupted
+                onMouseLeave={handleStopRecording} 
+                onTouchCancel={handleStopRecording} 
                 className={`rounded-full px-4 py-2 text-white flex items-center justify-center ${
                   status === "recording"
                     ? "bg-red-500 hover:bg-red-600"
