@@ -1,4 +1,3 @@
-// useReadMessages.js
 import { useRef, useEffect, useCallback } from "react";
 import { markMessageAsRead } from "./utils/chatOperations";
 
@@ -17,12 +16,7 @@ const useReadMessages = ({
     async (messageId) => {
       if (!messageId || markedMessages.current.has(messageId)) return;
 
-      const success = await markMessageAsRead(
-        db,
-        activeChat,
-        messageId,
-        userId
-      );
+      const success = await markMessageAsRead(db, activeChat, messageId, userId);
       if (success) {
         markedMessages.current.add(messageId);
         handleMarkMessageAsRead?.(messageId);
@@ -31,31 +25,7 @@ const useReadMessages = ({
     [db, activeChat, userId, handleMarkMessageAsRead]
   );
 
-  // Initial marking of unread messages
-  useEffect(() => {
-    if (!db || !activeChat || !messages?.length || !userId) {
-      return;
-    }
-
-    const markUnreadMessages = async () => {
-      const unreadMessages = messages.filter(
-        (msg) =>
-          msg.id && !msg.readBy?.includes(userId) && msg.sender !== userId
-      );
-
-      for (const msg of unreadMessages) {
-        try {
-          await markAsRead(msg.id);
-        } catch (error) {
-          console.error(`Failed to mark message ${msg.id}:`, error);
-        }
-      }
-    };
-
-    markUnreadMessages();
-  }, [db, activeChat, messages, userId, markAsRead]);
-
-  // Intersection Observer for real-time marking
+  // Intersection Observer for marking messages when visible
   useEffect(() => {
     if (
       !db ||
@@ -88,12 +58,11 @@ const useReadMessages = ({
       },
       {
         root: scrollElement,
-        threshold: 0.7,
+        threshold: 0.7, // Mark as read when 70% of the message is visible
       }
     );
 
     const messageElements = scrollElement.querySelectorAll("[data-message-id]");
-
     messageElements.forEach((element) => {
       observerRef.current.observe(element);
     });
@@ -103,7 +72,7 @@ const useReadMessages = ({
     };
   }, [db, activeChat, messages, userId, markAsRead]);
 
-  // Reset on chat change
+  // Reset marked messages when chat changes
   useEffect(() => {
     markedMessages.current.clear();
   }, [activeChat]);
