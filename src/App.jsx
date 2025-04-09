@@ -5,6 +5,9 @@ import { globalState } from "./jotai/globalState";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from "./components/ui/sonner";
 import MainLayout from "./components/MainLayout";
+// Typically in src/index.js or src/main.jsx
+import 'react-h5-audio-player/lib/styles.css';
+
 import {
   BrowserRouter as Router,
   Routes,

@@ -1,91 +1,65 @@
 import React from "react";
-import { CheckIcon } from "lucide-react";
-import { LinkifyText } from "./LinkifyText";
+import AudioMessage from "./AudioMessage";
 
-function Message({
+export default function Message({
   msg,
   isSender,
-  rotation,
-  onImageClick,
-  isSelectionMode,
-  selectedMessages,
-  toggleMessageSelection,
   formatMessageTime,
+  onImageClick,
 }) {
-
-  console.log(msg);
-
-
-
   return (
     <div className={`flex ${isSender ? "justify-end" : "justify-start"} mb-3`}>
-      {isSelectionMode && isSender && (
-        <div className="self-end mr-2">
-          <input
-            type="checkbox"
-            checked={selectedMessages.includes(msg.id)}
-            onChange={() => toggleMessageSelection(msg.id)}
-            className="h-4 w-4"
-          />
-        </div>
-      )}
       <div className="flex flex-col max-w-[75%]">
         <div
-          className={`p-3 rounded-2xl overflow-hidden shadow-sm ${
+          className={`rounded-2xl overflow-hidden ${
             isSender
-              ? "bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-tr-none"
-              : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700 rounded-tl-none"
+              ? "bg-orange-500 text-white rounded-tr-none"
+              : "bg-neutral-700 text-white rounded-tl-none"
           }`}
         >
-          {msg.type === "image" && msg.imageUrl ? (
-            <div onClick={() => onImageClick(msg)} className="cursor-pointer">
-              <img
-                src={msg.imageUrl}
-                alt="chat"
-                className="rounded-lg max-h-60 w-auto object-cover"
-                style={{ transform: `rotate(${rotation}deg)` }}
-              />
+          {msg.type === "audio" && msg.audioUrl ? (
+            <div className="w-60">
+              <AudioMessage audioUrl={msg.audioUrl} isSender={isSender} />
             </div>
-          ) : msg.type === "audio" && msg.audioUrl ? (
-            <div className="flex items-center gap-2">
-              <audio
-                controls
-                src={msg.audioUrl}
-                className="w-full max-w-[250px]"
-              >
-                Your browser does not support the audio element.
-              </audio>
-            </div>
+          ) : msg.type === "image" && msg.imageUrl ? (
+
+          <div onClick={() => onImageClick(msg)}>
+            <img
+              src={msg.imageUrl}
+              alt="Sent image"
+              className="object-cover max-h-64 w-full"
+            />
+          </div>
           ) : (
-            <div className="text-sm break-words">
-              <LinkifyText text={msg.text || ""} />
+            <div className="p-3 text-sm break-words">
+              {msg.text || ""}
             </div>
           )}
         </div>
 
         <div
-          className={`text-xs text-neutral-500 mt-1 ${
-            isSender ? "text-right" : "text-left"
+          className={`text-xs text-neutral-400 mt-1 flex items-center ${
+            isSender ? "justify-end" : "justify-start"
           }`}
         >
           <span>{formatMessageTime(msg.timestamp)}</span>
-          {isSender && msg.status && (
-            <span className="inline-flex items-center ml-1">
-              {msg.status === "sent" && (
-                <CheckIcon className="h-3.5 w-3.5 text-neutral-400" />
-              )}
-              {msg.status === "delivered" && (
-                <>
-                  <CheckIcon className="h-3.5 w-3.5 text-neutral-400" />
-                  <CheckIcon className="h-3.5 w-3.5 text-neutral-400 -ml-2" />
-                </>
-              )}
-              {msg.status === "read" && (
-                <>
-                  <CheckIcon className="h-3.5 w-3.5 text-orange-500" />
-                  <CheckIcon className="h-3.5 w-3.5 text-orange-500 -ml-2" />
-                </>
-              )}
+          {isSender && (
+            <span className="ml-1">
+              <svg
+                width="16"
+                height="12"
+                viewBox="0 0 16 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M15.0001 1L6.00006 10L2.00006 6"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </span>
           )}
         </div>
@@ -93,5 +67,3 @@ function Message({
     </div>
   );
 }
-
-export default Message;
