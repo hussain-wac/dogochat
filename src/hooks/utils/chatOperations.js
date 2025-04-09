@@ -26,6 +26,7 @@ export const sendMessage = async (
       type,
       text: type === "text" ? content : "",
       imageUrl: type === "image" ? content : "",
+      audioUrl: type === "audio" ? content : "", // Add audioUrl for audio type
     };
 
     const ref = await addDoc(
