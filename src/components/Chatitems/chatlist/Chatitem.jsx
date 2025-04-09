@@ -14,7 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { MoreVertical, Trash, ImageIcon } from "lucide-react";
+import { MoreVertical, Trash, ImageIcon ,AudioLinesIcon} from "lucide-react";
 function ChatItem({ chat, onSelect, onDelete }) {
   const { isOnline } = useFirebasePresence(chat.name);
 
@@ -99,11 +99,16 @@ function ChatItem({ chat, onSelect, onDelete }) {
                 )}
               </div>
               <div className="flex items-center justify-between mt-1">
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate pr-2 flex items-center gap-1">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate pr-2 flex items-center gap-1">
                   {chat.lastMessage?.type === "image" ? (
                     <>
                       <ImageIcon className="w-4 h-4 text-neutral-400" />
                       <span>Photo</span>
+                    </>
+                  ) : chat.lastMessage?.type === "audio" ? (
+                    <>
+                      <AudioLinesIcon className="w-4 h-4 text-neutral-400" />
+                      <span>Voice message</span>
                     </>
                   ) : chat.lastMessage?.text?.length > 30 ? (
                     chat.lastMessage.text.substring(0, 30) + "..."
