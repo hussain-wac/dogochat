@@ -1,0 +1,134 @@
+/* Orange Audio Player CSS */
+.audio-player-orange {
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0;
+    width: 100%;
+    max-width: 320px;
+}
+
+.audio-player-orange .rhap_container {
+    background: #FF6B00;
+    border-radius: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 12px 18px;
+    color: white;
+}
+
+.audio-player-orange audio {
+    display: none;
+}
+
+.audio-player-orange .rhap_controls-section {
+    justify-content: flex-start;
+    gap: 12px;
+    margin: 0;
+}
+
+.audio-player-orange .rhap_main-controls-button {
+    color: white;
+    font-size: 20px;
+    width: 24px;
+    height: 24px;
+}
+
+.audio-player-orange .rhap_progress-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.audio-player-orange .rhap_progress-container {
+    margin: 0 12px;
+    flex: 1;
+}
+
+.audio-player-orange .rhap_progress-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.audio-player-orange .rhap_progress-filled {
+    background: white;
+    height: 4px;
+    border-radius: 2px;
+}
+
+.audio-player-orange .rhap_progress-indicator {
+    display: none;
+    /* Hiding the circle indicator as per the image */
+}
+
+.audio-player-orange .rhap_time {
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+}
+
+.audio-player-orange .rhap_current-time {
+    margin-right: auto;
+}
+
+/* For the waveform-like icon at the end */
+.audio-player-orange .rhap_volume-controls {
+    justify-content: flex-end;
+}
+
+.audio-player-orange .rhap_volume-controls::after {
+    content: "";
+    width: 20px;
+    height: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M3 10v4m3-6v8m3-10v12m3-14v16m3-14v12m3-8v4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Hide any unwanted elements */
+.audio-player-orange .rhap_additional-controls,
+.audio-player-orange .rhap_volume-bar-container,
+.audio-player-orange .rhap_volume-button {
+    display: none;
+}
+.rhap_progress-indicator{
+    width: 12px;
+    height: 12px;
+    margin-left: -1px;
+    top: -4px;
+    background: #ffffff;
+}
+.rhap_progress-filled{
+    background-color: #b74b00;
+}
+.rhap_time {
+    font-size: 12px;
+}
+.rhap_progress-section{
+    gap: 6px;
+}
+.rhap_container{
+    padding: 4px;
+    background-color: transparent;
+    box-shadow: none;
+}
+.rhap_controls-section {
+    flex: 0 0 30px;
+
+    .rhap_main-controls {
+        width: 30px;
+        height: 30px;
+        flex: 0 0 30px;
+
+        .rhap_play-pause-button {
+            font-size: 30px;
+            width: 30px;
+            height: 30px;
+            margin: 0;
+            svg{
+                path{
+                    fill: #FFF;
+                }
+            }
+        }
+    }
+}
