@@ -12,6 +12,11 @@ function Message({
   toggleMessageSelection,
   formatMessageTime,
 }) {
+
+  console.log(msg);
+
+
+
   return (
     <div className={`flex ${isSender ? "justify-end" : "justify-start"} mb-3`}>
       {isSelectionMode && isSender && (
@@ -40,6 +45,16 @@ function Message({
                 className="rounded-lg max-h-60 w-auto object-cover"
                 style={{ transform: `rotate(${rotation}deg)` }}
               />
+            </div>
+          ) : msg.type === "audio" && msg.audioUrl ? (
+            <div className="flex items-center gap-2">
+              <audio
+                controls
+                src={msg.audioUrl}
+                className="w-full max-w-[250px]"
+              >
+                Your browser does not support the audio element.
+              </audio>
             </div>
           ) : (
             <div className="text-sm break-words">
