@@ -31,7 +31,7 @@ export const  LinkifyText = ({ text, maxLength = 200 }) => {
       {isLong && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="ml-1 text-xs font-medium text-orange-500 dark:text-orange-400 hover:underline"
+          className="ml-1 text-xs font-medium text-white-500 dark:text-white-400 hover:underline"
         >
           {expanded ? "Read less" : "Read more"}
         </button>
