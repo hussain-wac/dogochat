@@ -25,7 +25,7 @@ function FullscreenImage({ image, onClose, onDelete, formatMessageTime }) {
         <img
           src={image.url}
           alt="Blurred background"
-          className="w-full h-full object-cover filter blur-lg"
+          className="w-full  object-cover filter blur-lg"
         />
         <div className="absolute inset-0 bg-black opacity-50" />
       </div>

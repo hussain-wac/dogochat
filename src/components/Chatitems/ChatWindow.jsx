@@ -6,12 +6,10 @@ import ChatHeader from "./ChatWinowitems/ChatHeader";
 import ChatMessages from "./ChatWinowitems/ChatMessages";
 import NewMessagesBadge from "./ChatWinowitems/NewMessagesBadge";
 import MessageInput from "./ChatWinowitems/MessageInput";
-import { MessageCircleIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useFirebasePresence } from "../../hooks/useFirebasePresence";
-import useReadMessages from "../../hooks/useReadMessages"; // Import the hook
-import { db } from "../../firebase"; // Import your Firestore instance
+import useReadMessages from "../../hooks/useReadMessages"; 
+import { db } from "../../firebase"; 
 
 function ChatWindow({ initialUsername, onBackClick }) {
   const {
@@ -41,15 +39,13 @@ function ChatWindow({ initialUsername, onBackClick }) {
   const isMobile = window.innerWidth < 768;
   const navigate = useNavigate();
 
-  // Integrate useReadMessages
   const { markAsRead } = useReadMessages({
     db, // Your Firestore instance
     scrollAreaRef,
     activeChat,
-    messages: Object.values(groupedMessages).flat(), // Flatten grouped messages
+    messages: Object.values(groupedMessages).flat(), 
     userId: user?.uid,
     handleMarkMessageAsRead: (messageId) => {
-      console.log(`Marked message ${messageId} as read`);
     },
   });
 
@@ -61,36 +57,9 @@ function ChatWindow({ initialUsername, onBackClick }) {
     }
   };
 
-  if (!username || !activeChat) {
-    return (
-      <div className="flex flex-col items-center justify-center text-neutral-500 h-screen space-y-4 p-8 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
-        <div className="w-16 h-16 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center animate-pulse">
-          <MessageCircleIcon className="h-8 w-8 text-neutral-400 dark:text-neutral-600" />
-        </div>
-        <p className="text-lg font-medium text-center">
-          {username ? "Loading chat..." : "Select a chat to start messaging"}
-        </p>
-        <p className="text-sm text-neutral-400 text-center max-w-sm">
-          {username
-            ? "Just a moment while we load your conversation..."
-            : "Choose from your existing chats or search for users to start a new conversation"}
-        </p>
-        {isMobile && (
-          <Button
-            onClick={handleBackToChats}
-            className="mt-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full px-4"
-          >
-            <MessageCircleIcon className="h-4 w-4 mr-2" />
-            View Chats
-          </Button>
-        )}
-      </div>
-    );
-  }
-
   return (
     <div className="bg-neutral-100 dark:bg-neutral-neutral">
-      <Card className="flex flex-col h-full rounded-none border-none shadow-none overflow-hidden gap-0 py-2">
+      <Card className="flex flex-col rounded-none border-none shadow-none  gap-0 py-2 h-[92%] md:h-[90%] lg:h-[95%]">
         <ChatHeader
           username={username}
           isOpponentOnline={presence.isOnline}
@@ -101,7 +70,8 @@ function ChatWindow({ initialUsername, onBackClick }) {
           onBackClick={handleBackToChats}
           chatId={activeChat}
         />
-        <CardContent className="p-0 overflow-hidden bg-neutral-50 dark:bg-neutral-900 relative pb-[50px] h-full">
+      
+        <CardContent className="p-0  bg-neutral-50 dark:bg-neutral-900 relative h-full">
           <ChatMessages
             scrollAreaRef={scrollAreaRef}
             isLoading={isLoading}

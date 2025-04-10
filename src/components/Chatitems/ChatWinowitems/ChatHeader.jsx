@@ -60,7 +60,7 @@ const ChatHeader = ({
         )}
         
         {/* User info - grows to fill space */}
-        <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+        <div className="min-w-0 flex-1 overflow-hidden">
           <CardTitle className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-100 truncate">
             {chatUser?.username || "User"}
           </CardTitle>

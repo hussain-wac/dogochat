@@ -24,7 +24,7 @@ function App() {
 
   usePresence();
   return (
-    <div className="h-screen bg-neutral-100 dark:bg-neutral-900">
+    <div className="bg-neutral-100 dark:bg-neutral-900 h-screen">
       <Provider>
         <Toaster />
         <Router>

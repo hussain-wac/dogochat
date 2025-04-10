@@ -38,9 +38,9 @@ function ChatMessages({
   });
 
   return (
-    <div className="flex flex-col flex-1 h-full">
+    <div className="h-[73vh] sm:h-[80vh] ">
       <FullscreenImage
-        image={fullscreenImage}
+        image={fullscreenImage} 
         onClose={closeFullscreenImage}
         onDelete={() => {
           toggleMessageSelection(fullscreenImage?.id);
@@ -51,7 +51,7 @@ function ChatMessages({
 
       <ScrollArea
         ref={scrollAreaRef}
-        className="flex-1 px-2 sm:px-4 py-2 max-h-[80svh]"
+        className="h-full flex-1 px-2 sm:px-4 py-2 "
       >
         <div className="space-y-4 pb-6">
           {isLoading
