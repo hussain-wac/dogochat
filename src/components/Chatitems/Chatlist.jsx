@@ -68,7 +68,7 @@ const ChatList = forwardRef(({ setActiveChat, isSearching }, ref) => {
         </div>
       )}
 
-      <Card className="flex flex-col h-full border-none shadow-none">
+      <Card className="flex flex-col h-full border-none shadow-none h-[calc(100vh-69px)]">
         <CardContent className="p-0 flex-1 min-h-0">
           <ScrollArea className="h-full">
             {isLoading ? (

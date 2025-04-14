@@ -4,13 +4,14 @@ import Navbar from "./Navbar";
 
 const MainLayout = () => {
   return (
-    <div className="flex flex-col h-screen">
+    <div className="">
       {/* Sticky Navbar */}
-      <div className="sticky top-0 z-20 bg-white dark:bg-gray-900">
+     
         <Navbar />
-      </div>
+  
       {/* Outlet takes remaining height */}
-      <div className="flex-1 overflow-hidden">
+      <div className="overflow-hidden h-[calc(100vh_-_63px)]
+">
         <Outlet />
       </div>
     </div>

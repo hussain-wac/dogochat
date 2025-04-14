@@ -32,7 +32,7 @@ function Navbar() {
   };
 
   return (
-    <nav className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 backdrop-blur-md supports-backdrop-blur:bg-white/90 dark:supports-backdrop-blur:bg-neutral-900/90 sticky top-0 z-30 shadow-sm">
+    <nav className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 backdrop-blur-md supports-backdrop-blur:bg-white/90 dark:supports-backdrop-blur:bg-neutral-900/90 w-full top-0 z-30 shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <div className="relative w-10 h-10">

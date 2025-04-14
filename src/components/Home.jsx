@@ -47,8 +47,8 @@ function Home() {
 
   if (isMobile) {
     return (
-      <div className="h-full flex flex-col bg-neutral-50 dark:bg-neutral-900">
-        <div className="flex-1 relative overflow-hidden">
+      <div className=" bg-neutral-50 dark:bg-neutral-900 h-full">
+        <div className=" relative overflow-hidden h-full">
           <AnimatePresence initial={false}>
             {showSidebar ? (
               <motion.div 
@@ -58,7 +58,7 @@ function Home() {
                 exit={{ x: "-100%" }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
-                <div className="flex flex-col h-full">
+                <div className="">
                   <div className="p-4 border-b dark:border-neutral-800 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200 flex items-center">
                       <MessageCircleIcon className="h-5 w-5 mr-2 text-orange-500" />
@@ -89,7 +89,7 @@ function Home() {
                       </Popover>
                     </div>
                   </div>
-                  <div className="flex-1 overflow-hidden">
+                  <div className="">
                     <ChatList setActiveChat={handleSetActiveChat} />
                   </div>
                 </div>
@@ -106,7 +106,7 @@ function Home() {
                 isMobile={true}
               />
             ) : !showSidebar ? (
-              <div className="flex flex-col items-center justify-center text-neutral-500 h-full space-y-4 p-8">
+              <div className="flex flex-col items-center justify-center text-neutral-500  space-y-4 p-8">
                 <img
                   src="/meme2.png"
                   alt="Dogochat Logo"
@@ -135,7 +135,7 @@ function Home() {
 
   // Desktop view remains unchanged
   return (
-    <div className="h-full flex bg-neutral-50 dark:bg-neutral-900">
+    <div className=" flex bg-neutral-50 dark:bg-neutral-900 h-full">
       <ResizablePanelGroup direction="horizontal" className="flex-1">
         <ResizablePanel
           defaultSize={30}
@@ -179,11 +179,11 @@ function Home() {
           </div>
         </ResizablePanel>
         <ResizablePanelHandle className="w-1.5 bg-neutral-100 dark:bg-neutral-800 transition-colors hover:bg-orange-100 dark:hover:bg-orange-900/30" />
-        <ResizablePanel defaultSize={70} minSize={50} className="h-full bg-neutral-50 dark:bg-neutral-900">
+        <ResizablePanel defaultSize={70} minSize={50} className=" bg-neutral-50 dark:bg-neutral-900">
           {selectedUsername ? (
             <ChatWindow initialUsername={selectedUsername} />
           ) : (
-            <div className="flex flex-col items-center justify-center text-neutral-500 h-full space-y-4 p-8">
+            <div className="flex flex-col items-center justify-center text-neutral-500 space-y-4 p-8">
               <img
                 src="/meme2.png"
                 alt="Dogochat Logo"
